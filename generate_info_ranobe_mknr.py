@@ -1,6 +1,10 @@
 __author__ = 'ipetrash'
 
 
+"""Скрипт парсит сайт ранобе http://ruranobe.ru/r/mknr, вытаскивает
+информацию о ранобе, томах и главах, после сохраняет"""
+
+
 import get_ranobe_info
 import get_volume_info
 import json
