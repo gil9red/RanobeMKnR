@@ -10,6 +10,26 @@ from urllib.parse import urlparse
 import os.path
 
 
+def get_url2full_image_cover(g, url_ranobe):
+    """Функция возвращает путь к картинке обложки тома."""
+
+    # Относительная ссылка к обложки тома
+    relative_url_cover = g.doc.select('//td[@id="cover"]/a').attr('href')
+
+    # Соединение адреса к главной странице ранобе и относительной ссылки к обложке тома
+    url_cover_volume = urljoin(url_ranobe, relative_url_cover)
+
+    # Переход на страницу обложки
+    g.go(url_cover_volume)
+    relative_url_full_cover = g.doc.select('//div[@class="fullImageLink"]/a').attr('href')
+
+    # Соединение адреса к главной странице ранобе и относительной
+    # ссылки к полной картике обложке тома
+    url_full_cover_volume = urljoin(url_ranobe, relative_url_full_cover)
+
+    return url_full_cover_volume
+
+
 def get_volume_base_page(url):
     """Функция возвратит базовую страницу url, например для
     http://ruranobe.ru/r/mknr/v12/ch1 вернется ch1,
@@ -54,20 +74,8 @@ def volume_info(url_volume, url_ranobe):
         print("Нет содержания: {}".format(url_volume))
         return
 
-    # TODO: Обернуть в функцию код получения полной ссылки к картинке обложки, в функцию передавать только адрес тома
-    # Относительная ссылка к обложки тома
-    relative_url_cover = g.doc.select('//td[@id="cover"]/a').attr('href')
-
-    # Соединение адреса к главной странице ранобе и относительной ссылки к обложке тома
-    url_cover_volume = urljoin(url_ranobe, relative_url_cover)
-
-    grab_cover = Grab()
-    g.setup(hammer_mode=True)
-    grab_cover.go(url_cover_volume)
-    relative_url_cover = grab_cover.doc.select('//div[@class="fullImageLink"]/a').attr('href')
-
-    # Соединение адреса к главной странице ранобе и относительной ссылки к обложке тома
-    url_cover_volume = urljoin(url_ranobe, relative_url_cover)
+    # Ссылка к картинке обложки тома
+    url_cover_volume = get_url2full_image_cover(g.clone(), url_ranobe)
 
     # Получаем список строк с двумя столбцами, каждая строка содержит
     # некоторую информацию о томе: названия на нескольких языка, серия,

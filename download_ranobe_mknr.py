@@ -1,10 +1,6 @@
 __author__ = 'ipetrash'
 
 
-# TODO: скачать ранобе "Непутевый ученик в школе магии" и сконвертировать в формат, который
-# сможет открыть книгочиталка.
-# http://ruranobe.ru/r/mknr
-
 # from grab import Grab
 # from os import makedirs
 # import os.path
