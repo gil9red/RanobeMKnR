@@ -46,6 +46,7 @@ def get_volume_base_page(url):
 #   p1  - Вступление
 #   p2  - Пролог
 #   ch% - Глава %
+#   c%  - Глава %
 #   e   - Эпилог
 #   a   - Послесловие
 #   a2  - Запоздавший шедевр
@@ -67,7 +68,7 @@ def volume_info(url_volume, url_ranobe):
         return
 
     # Получение списка глав из оглавления
-    contents = g.doc.select('//div[@id="index"]/*/li/a')
+    contents = g.doc.select('//div[@id="index"]//a')
     # Если нет содержания -- пропускаем том
     if not contents:
         # TODO: кажется, лучше выкидывать исключения с описанием причины
@@ -126,7 +127,7 @@ def volume_info(url_volume, url_ranobe):
             # Если типом является глава, выходим -- нам не нужен том, у которого будут отсутствовать
             # какие то главы, а вот все остальным ("Начальные иллюстрации", "Пролог", "Эпилог",
             # "Послесловие", и т.п.) можно пренебречь
-            if volume_base_page.startswith("ch"):
+            if volume_base_page.startswith("c"):
                 return
 
             # Пропускаем добавление страницы в список
@@ -135,7 +136,7 @@ def volume_info(url_volume, url_ranobe):
         # Разбиение списка глав соответственно с типами страниц: главы -- отдельно, а все остальное тоже отдельно.
 
         # Если типом страницы является глава:
-        if volume_base_page.startswith("ch"):
+        if volume_base_page.startswith("c"):
             # Добавление адреса главы к списку
             chapters.append(url_chapter)
         else:
