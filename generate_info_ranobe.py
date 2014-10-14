@@ -87,7 +87,7 @@ if __name__ == '__main__':
         print()
 
     # Создадим файл, содержащий описание к ранобе: название, автор, аннотацию и т.п.
-    ranobe_info_path = os.path.join(dir_ranobe, 'ranobe_info')
+    ranobe_info_path = os.path.join(dir_ranobe, 'ranobe_info.json')
     with open(ranobe_info_path, mode='w', encoding='utf8') as f:
         dump_data = {
             "name": name_ranobe,
