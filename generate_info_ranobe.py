@@ -13,6 +13,10 @@ import os.path
 from os import makedirs
 
 
+DIR_RANOBE = "_ranobe_"
+RANOBE_INFO_PATH = os.path.join(DIR_RANOBE, 'ranobe_info.json')
+
+
 if __name__ == '__main__':
     ranobe = get_ranobe_info.ranobe_info()
 
@@ -21,10 +25,9 @@ if __name__ == '__main__':
     annotation = ranobe["annotation"]
     list_volumes = ranobe["list_volumes"]
 
-    # В папке с скриптом создаем папку c названием name_ranobe
-    dir_ranobe = "_ranobe_"
-    if not os.path.exists(dir_ranobe):
-        makedirs(dir_ranobe)
+    # В папке с скриптом создаем папку c названием DIR_RANOBE
+    if not os.path.exists(DIR_RANOBE):
+        makedirs(DIR_RANOBE)
 
     author = None
     series = None
@@ -48,12 +51,6 @@ if __name__ == '__main__':
 
             # Добавляем том к списку томов
             volumes.append(volume_info)
-
-            # # Создание папки тома ранобе
-            # volume_name = volume_info.get("name").replace(':', '.')
-            # dir_volume_ranobe = os.path.join(dir_ranobe, volume_name)
-            # if not os.path.exists(dir_volume_ranobe):
-            #     makedirs(dir_volume_ranobe)
 
             if not author:
                 author = volume_info.get("author")
@@ -87,8 +84,7 @@ if __name__ == '__main__':
         print()
 
     # Создадим файл, содержащий описание к ранобе: название, автор, аннотацию и т.п.
-    ranobe_info_path = os.path.join(dir_ranobe, 'ranobe_info.json')
-    with open(ranobe_info_path, mode='w', encoding='utf8') as f:
+    with open(RANOBE_INFO_PATH, mode='w', encoding='utf8') as f:
         dump_data = {
             "name": name_ranobe,
             "author": author,
