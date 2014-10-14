@@ -12,18 +12,34 @@ import json
 
 
 if __name__ == '__main__':
+    # Путь к файлу с инфой об ранобе
     ranobe_info_path = generate_info_ranobe.RANOBE_INFO_PATH
 
-    # Если файл по такому пути не существует, завершаем работу скрипта
-    if not os.path.exists(ranobe_info_path):
-        # TODO: как вариант: если не существует, можно запустить скрипт generate_info_ranobe.
-        print("Файл {}, нужный для работы скрипта не существует, для его генерации "
-              "нужно использовать скрипт generate_info_ranobe.".format(ranobe_info_path))
-        sys.exit()
+    try:
+        # Если файла по такому пути не существует, завершаем работу скрипта
+        if not os.path.exists(ranobe_info_path):
+            raise Exception("Файл {} не существует".format(ranobe_info_path))
 
-    # Открываем файл в режиме чтения
-    with open(ranobe_info_path, mode='r', encoding='utf8') as f:
-        # Десериализация данных в объекты python'а
-        ranobe_info = json.load(f)
+        ranobe_info = None
+
+        # Открываем файл в режиме чтения
+        with open(ranobe_info_path, mode='r', encoding='utf8') as f:
+            # Десериализация данных в объекты python'а
+            try:
+                ranobe_info = json.load(f)
+            except ValueError as err:
+                raise Exception("Файл {} испорчен: {}".format(ranobe_info_path, err))
+
 
         print(ranobe_info)
+        print("\nНазвание: '{}'".format(ranobe_info.get("name")))
+        print("Автор: '{}'".format(ranobe_info.get("author")))
+        print("Иллюстратор: '{}'".format(ranobe_info.get("illustrator")))
+        print("Серия: '{}'".format(ranobe_info.get("series")))
+        print("Аннотации:\n'{}'".format(ranobe_info.get("annotation")))
+
+
+    except Exception as err:
+        # Выводим ошибку и завершаем работу скрипта
+        print(err)
+        sys.exit(-1)
