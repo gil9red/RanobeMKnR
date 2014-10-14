@@ -24,9 +24,10 @@ if __name__ == '__main__':
 
         # Открываем файл в режиме чтения
         with open(ranobe_info_path, mode='r', encoding='utf8') as f:
-            # Десериализация данных в объекты python'а
             try:
+                # Десериализация данных в объекты python'а
                 ranobe_info = json.load(f)
+
             except ValueError as err:
                 raise Exception("Файл {} испорчен: {}".format(ranobe_info_path, err))
 
