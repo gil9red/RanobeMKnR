@@ -21,7 +21,7 @@ if __name__ == '__main__':
     ranobe = get_ranobe_info.ranobe_info()
 
     url = ranobe["url"]
-    name_ranobe = ranobe["name"]
+    ranobe_name = ranobe["name"]
     annotation = ranobe["annotation"]
     list_volumes = ranobe["list_volumes"]
 
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     series = None
     illustrator = None
 
-    print("Название: '{}'".format(name_ranobe))
+    print("Название: '{}'".format(ranobe_name))
     print("\nАннотации:\n'{}'".format(annotation))
     print("\nТома ({}):".format(len(list_volumes)))
 
@@ -50,8 +50,8 @@ if __name__ == '__main__':
             volume_info["number"] = n
 
             # Путь к папке с томов
-            name = volume_info.get("name").replace(':', '.')
-            volume_info["dir"] = os.path.join(DIR_RANOBE, name)
+            volume_name = volume_info.get("name").replace(':', '.')
+            volume_info["dir"] = os.path.join(DIR_RANOBE, ranobe_name, volume_name)
 
             # Добавляем том к списку томов
             volumes.append(volume_info)
@@ -90,7 +90,7 @@ if __name__ == '__main__':
     # Создадим файл, содержащий описание к ранобе: название, автор, аннотацию и т.п.
     with open(RANOBE_INFO_PATH, mode='w', encoding='utf8') as f:
         dump_data = {
-            "name": name_ranobe,
+            "name": ranobe_name,
             "author": author,
             "illustrator": illustrator,
             "series": series,
