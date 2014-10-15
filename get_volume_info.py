@@ -1,13 +1,12 @@
 __author__ = 'ipetrash'
 
-
 """Модуль для возвращения информации о томе ранобе."""
 
-
-from grab import Grab
 from urllib.parse import urljoin
 from urllib.parse import urlparse
 import os.path
+
+from grab import Grab
 
 
 def get_url2full_image_cover(g, url_ranobe):
@@ -42,7 +41,7 @@ def get_volume_base_page(url):
 
 
 # Типы страниц в томе:
-#   i   - Начальные иллюстрации
+# i   - Начальные иллюстрации
 #   p1  - Вступление
 #   p2  - Пролог
 #   ch% - Глава %

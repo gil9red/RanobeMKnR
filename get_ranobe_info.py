@@ -1,6 +1,5 @@
 __author__ = 'ipetrash'
 
-
 """Модуль для возвращения информации о ранобе."""
 
 
@@ -8,6 +7,7 @@ def ranobe_info():
     """Функция возвращает словарь, содержащий информацию о ранобе."""
 
     from grab import Grab
+
     url = 'http://ruranobe.ru/r/mknr'
 
     g = Grab()

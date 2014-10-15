@@ -1,21 +1,19 @@
 __author__ = 'ipetrash'
 
-
 """Скрипт парсит сайт ранобе http://ruranobe.ru/r/mknr, вытаскивает
 информацию о ранобе, томах и главах, после ее сохраняет."""
 
-
-import get_ranobe_info
-import get_volume_info
 import json
 from urllib.parse import urljoin
 import os.path
 from os import makedirs
 
+import get_ranobe_info
+import get_volume_info
+
 
 DIR_RANOBE = "_ranobe_"
 RANOBE_INFO_PATH = os.path.join(DIR_RANOBE, 'ranobe_info.json')
-
 
 if __name__ == '__main__':
     ranobe = get_ranobe_info.ranobe_info()
