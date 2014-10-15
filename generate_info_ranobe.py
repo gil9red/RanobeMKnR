@@ -49,6 +49,10 @@ if __name__ == '__main__':
             # Номер тома в серии
             volume_info["number"] = n
 
+            # Путь к папке с томов
+            name = volume_info.get("name").replace(':', '.')
+            volume_info["dir"] = os.path.join(DIR_RANOBE, name)
+
             # Добавляем том к списку томов
             volumes.append(volume_info)
 
