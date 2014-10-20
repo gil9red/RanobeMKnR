@@ -57,8 +57,8 @@ if __name__ == '__main__':
                 # Получение основного контекста, имеющий номер главы и
                 content_text = g.doc.select('//div[@id="mw-content-text"]')
 
-                # TODO: получение названия главы
-                # h2/span[@class="mw-headline"]
+                # Получение названия главы
+                name_chapter = g.doc.select('//h2/span[@class="mw-headline"]').text()
 
                 # TODO: учитывать картинки в тексте
                 # TODO: учитывать ошибку и подобные ею "Ошибка цитирования Для
@@ -71,6 +71,7 @@ if __name__ == '__main__':
                 chapter_content = '\n'.join(r.text() for r in content_text.select('p'))
                 if chapter_content:
                     with open(path_file_chapter, mode='w', encoding='utf8') as f:
+                        f.write(name_chapter + '\n\n')
                         f.write(chapter_content)
                 else:
                     raise Exception("chapter_content is null")
