@@ -52,12 +52,16 @@ if __name__ == '__main__':
         f.write('<last-name>' + ranobe_info['author'].split(' ')[1] + '</last-name>')
         f.write('</author>')
 
+        # TODO: аннотация одинакова для каждого тома
         f.write('<annotation>')
         annotation = ''
         for line in ranobe_info['annotation'].split('\n'):
             annotation += '<p>{}</p>'.format(line)
         f.write(annotation)
         f.write('</annotation>')
+
+        # TODO: серия и номер в серии для каждого тома генерировать отдельно:
+        # <sequence name="{}" number="{}"/>
 
         f.write('</title-info>')
         f.write('</description>')
