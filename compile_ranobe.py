@@ -3,9 +3,14 @@ __author__ = 'ipetrash'
 """Скрипт, используя данные скриптов get_ranobe_info и download_ranobe,
 генерирует файл в формате fb2."""
 
-import generate_info_ranobe
 import os.path
 import sys
+
+import generate_info_ranobe
+
+
+# http://www.fictionbook.org/index.php/Описание_формата_FB2_от_Sclex
+# http://www.fictionbook.org/index.php/Элементы_стандарта_FictionBook
 
 if __name__ == '__main__':
     # Путь к папке с генерированной информацией
