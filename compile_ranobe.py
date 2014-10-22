@@ -34,12 +34,16 @@ if __name__ == '__main__':
         # Десериализация данных в объекты python'а
         ranobe_info = json.load(f)
 
-    # TODO: имя файла с ранобе нужно такое же как и название ранобе
-    # Название файла ранобе
-    name_ranobe_fb2 = 'ranobe.fb2'
+
+    # Первый том
+    volume_info = ranobe_info['volumes'][0]
+
+    # TODO: имя файла с томом ранобе нужно такое же как и название тома
+    # Название файла тома ранобе
+    name_volume_fb2 = 'ranobe.fb2'
 
     # Путь к файлу ранобе
-    path_ranobe_fb2 = os.path.join(ranobe_dir, name_ranobe_fb2)
+    path_volume_fb2 = os.path.join(ranobe_dir, name_volume_fb2)
 
     text_fb2 = '<?xml version="1.0" encoding="UTF-8"?>'
     text_fb2 += ('<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0" '
@@ -48,15 +52,24 @@ if __name__ == '__main__':
     text_fb2 += '<description>'
     text_fb2 += '<title-info>'
 
-    text_fb2 += '<book-title>' + ranobe_info['name'] + '</book-title>'
+    # Добавление имени тома
+    text_fb2 += '<book-title>' + volume_info['name'] + '</book-title>'
 
+    # Добавление автора
     text_fb2 += '<author>'
-    # TODO: рефакторить получение имени и фамилии
-    text_fb2 += '<first-name>' + ranobe_info['author'].split(' ')[0] + '</first-name>'
-    text_fb2 += '<last-name>' + ranobe_info['author'].split(' ')[1] + '</last-name>'
+    first_name, last_name = tuple(volume_info['author'].split(' '))
+    text_fb2 += '<first-name>' + first_name + '</first-name>'
+    text_fb2 += '<last-name>' + last_name + '</last-name>'
     text_fb2 += '</author>'
 
-    # TODO: аннотация одинакова для каждого тома
+    # Добавление иллюстратора
+    text_fb2 += '<author>'
+    first_name, last_name = tuple(volume_info['illustrator'].split(' '))
+    text_fb2 += '<first-name>' + first_name + '</first-name>'
+    text_fb2 += '<last-name>' + last_name + '</last-name>'
+    text_fb2 += '</author>'
+
+    # Добавление аннотации
     text_fb2 += '<annotation>'
     annotation = ''
     for line in ranobe_info['annotation'].split('\n'):
@@ -64,8 +77,8 @@ if __name__ == '__main__':
     text_fb2 += annotation
     text_fb2 += '</annotation>'
 
-    # TODO: серия и номер в серии для каждого тома генерировать отдельно:
-    # <sequence name="{}" number="{}"/>
+    # Добавлени серии и номера в серии
+    text_fb2 += '<sequence name="{}" number="{}"/>'.format(volume_info['series'], volume_info['number'])
 
     text_fb2 += '</title-info>'
     text_fb2 += '</description>'
@@ -73,6 +86,6 @@ if __name__ == '__main__':
     text_fb2 += '</FictionBook>'
 
     # Открытие и перезапись файла ранобе
-    with open(path_ranobe_fb2, mode='w', encoding='utf8') as f:
+    with open(path_volume_fb2, mode='w', encoding='utf8') as f:
         xml = pretty_xml(text_fb2)
         f.write(xml)
