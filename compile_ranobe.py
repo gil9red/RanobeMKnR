@@ -80,7 +80,18 @@ if __name__ == '__main__':
     # Добавлени серии и номера в серии
     text_fb2 += '<sequence name="{}" number="{}"/>'.format(volume_info['series'], volume_info['number'])
 
+    # Добавление жанра(ов)
+    text_fb2 += '<genre>{}</genre>'.format('sf_fantasy')
+
+    # Язык тома
+    text_fb2 += '<lang>{}</lang>'.format('ru')
+
+    # TODO: Добавить обложку
+    # Обложка тома
+    # text_fb2 += '<coverpage><image l:href="#cover.jpg"/></coverpage>'
+
     text_fb2 += '</title-info>'
+
     text_fb2 += '</description>'
     # text_fb2 += '<body>' + '<p>' + 'Hello мир!' + '</p>' + '</body>'
     text_fb2 += '</FictionBook>'
