@@ -53,6 +53,9 @@ if __name__ == '__main__':
     text_fb2 += '<description>'
 
 
+    # TODO: добавить информацию о переводчиках
+
+
     text_fb2 += '<title-info>'
 
     # Добавление имени тома
