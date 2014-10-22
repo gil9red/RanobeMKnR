@@ -49,7 +49,10 @@ if __name__ == '__main__':
     text_fb2 += ('<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0" '
                  'xmlns:xlink="http://www.w3.org/1999/xlink">')
 
+
     text_fb2 += '<description>'
+
+
     text_fb2 += '<title-info>'
 
     # Добавление имени тома
@@ -92,7 +95,30 @@ if __name__ == '__main__':
 
     text_fb2 += '</title-info>'
 
+
+    # Информация о создателе документа fb2
+    text_fb2 += '<document-info>'
+
+    # Автор документа, т.е. тот, кто его создал/сгенерировал/сконвертировал.
+    text_fb2 += '<author>'
+    text_fb2 += '<nickname>{}</nickname>'.format('gil9red')
+    text_fb2 += '<home-page>{}</home-page>'.format('https://github.com/gil9red')
+    text_fb2 += '</author>'
+
+    # TODO: добавить
+    # Откуда взят оригинальный документ, доступный в online:
+    # text_fb2 += '<src-url>{}</src-url>'.format('')
+
+    # TODO: добавить
+    # Перечисление программ, которые использовались при подготовке документа.
+    # text_fb2 += '<program-used>{}</program-used>'.format('')
+
+    text_fb2 += '</document-info>'
+
+
     text_fb2 += '</description>'
+
+
     # text_fb2 += '<body>' + '<p>' + 'Hello мир!' + '</p>' + '</body>'
     text_fb2 += '</FictionBook>'
 
