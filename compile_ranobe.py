@@ -121,6 +121,12 @@ if __name__ == '__main__':
     text_fb2 += '</document-info>'
 
 
+    # Информация о бумажном (или другом) издании, на основании которого создан FB2.x документ.
+    text_fb2 += '<publish-info>'
+    text_fb2 += '<isbn>{}</isbn>'.format(volume_info['ISBN'])
+    text_fb2 += '</publish-info>'
+
+
     text_fb2 += '</description>'
 
 
