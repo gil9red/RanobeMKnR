@@ -12,6 +12,11 @@ import json
 import generate_info_ranobe
 
 
+def pretty_xml(xml, ind=' ' * 2):
+    from xml.dom.minidom import parseString
+    return parseString(xml).toprettyxml(indent=ind)
+
+
 # http://www.fictionbook.org/index.php/Описание_формата_FB2_от_Sclex
 # http://www.fictionbook.org/index.php/Элементы_стандарта_FictionBook
 
@@ -36,34 +41,38 @@ if __name__ == '__main__':
     # Путь к файлу ранобе
     path_ranobe_fb2 = os.path.join(ranobe_dir, name_ranobe_fb2)
 
-    # Открытие и перезапись файла ранобк
+    text_fb2 = '<?xml version="1.0" encoding="UTF-8"?>'
+    text_fb2 += ('<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0" '
+                 'xmlns:xlink="http://www.w3.org/1999/xlink">')
+
+    text_fb2 += '<description>'
+    text_fb2 += '<title-info>'
+
+    text_fb2 += '<book-title>' + ranobe_info['name'] + '</book-title>'
+
+    text_fb2 += '<author>'
+    # TODO: рефакторить получение имени и фамилии
+    text_fb2 += '<first-name>' + ranobe_info['author'].split(' ')[0] + '</first-name>'
+    text_fb2 += '<last-name>' + ranobe_info['author'].split(' ')[1] + '</last-name>'
+    text_fb2 += '</author>'
+
+    # TODO: аннотация одинакова для каждого тома
+    text_fb2 += '<annotation>'
+    annotation = ''
+    for line in ranobe_info['annotation'].split('\n'):
+        annotation += '<p>{}</p>'.format(line)
+    text_fb2 += annotation
+    text_fb2 += '</annotation>'
+
+    # TODO: серия и номер в серии для каждого тома генерировать отдельно:
+    # <sequence name="{}" number="{}"/>
+
+    text_fb2 += '</title-info>'
+    text_fb2 += '</description>'
+    # text_fb2 += '<body>' + '<p>' + 'Hello мир!' + '</p>' + '</body>'
+    text_fb2 += '</FictionBook>'
+
+    # Открытие и перезапись файла ранобе
     with open(path_ranobe_fb2, mode='w', encoding='utf8') as f:
-        f.write('<?xml version="1.0" encoding="UTF-8"?>' + '\n')
-        f.write('<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0" '
-                'xmlns:xlink="http://www.w3.org/1999/xlink">' + '\n')
-        f.write('<description>')
-        f.write('<title-info>')
-
-        f.write('<book-title>' + ranobe_info['name'] + '</book-title>')
-
-        f.write('<author>')
-        # TODO: рефакторить получение имени и фамилии
-        f.write('<first-name>' + ranobe_info['author'].split(' ')[0] + '</first-name>')
-        f.write('<last-name>' + ranobe_info['author'].split(' ')[1] + '</last-name>')
-        f.write('</author>')
-
-        # TODO: аннотация одинакова для каждого тома
-        f.write('<annotation>')
-        annotation = ''
-        for line in ranobe_info['annotation'].split('\n'):
-            annotation += '<p>{}</p>'.format(line)
-        f.write(annotation)
-        f.write('</annotation>')
-
-        # TODO: серия и номер в серии для каждого тома генерировать отдельно:
-        # <sequence name="{}" number="{}"/>
-
-        f.write('</title-info>')
-        f.write('</description>')
-        # f.write('<body>' + '<p>' + 'Hello мир!' + '</p>' + '</body>')
-        f.write('</FictionBook>')
+        xml = pretty_xml(text_fb2)
+        f.write(xml)
