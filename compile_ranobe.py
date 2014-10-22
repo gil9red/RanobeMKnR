@@ -113,6 +113,11 @@ if __name__ == '__main__':
     # Перечисление программ, которые использовались при подготовке документа.
     # text_fb2 += '<program-used>{}</program-used>'.format('')
 
+    # TODO: добавить
+    # Версия документа
+    # text_fb2 += '<version>{}</version>'.format('1.0')
+
+
     text_fb2 += '</document-info>'
 
 
