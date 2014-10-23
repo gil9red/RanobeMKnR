@@ -149,6 +149,26 @@ if __name__ == '__main__':
 
 
     text_fb2 += '<body>'
+
+    # Порядок глав (с типами страниц) в томе:
+    #  i   - Начальные иллюстрации
+    #  p1  - Вступление
+    #  p2  - Пролог
+    #  ch% - Глава %
+    #  c%  - Глава %
+    #  e   - Эпилог
+    #  a   - Послесловие
+    #  a2  - Запоздавший шедевр
+    #  at  - Послесловие команды перевода
+    #
+    # volume_info['i']
+    # volume_info['p1']
+    # volume_info['p2']
+    # volume_info['chapters']
+    # volume_info['e']
+    # volume_info['a']
+    # volume_info['a2']
+
     text_fb2 += '<title><p>{}</p></title>'.format(name_volume)
     text_fb2 += '<section><title><p>Глава 0</p></title><p>Бла-бла-первая глава!</p></section>'
     text_fb2 += '<section><title><p>Глава 1</p></title><p>Бла-бла-вторая глава!</p></section>'
