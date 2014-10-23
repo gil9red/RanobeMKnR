@@ -52,6 +52,10 @@ def get_volume_base_page(url):
 #  at  - Послесловие команды перевода
 
 
+# TODO: http://ruranobe.ru/r/mknr/v8/ss -- странный тип страницы
+# TODO: http://ruranobe.ru/r/mknr/v8/text -- странный тип страницы
+
+
 def volume_info(url_volume, url_ranobe):
     """Функция возвращает словарь, содержащий информацию о томе ранобе."""
 
