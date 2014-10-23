@@ -49,6 +49,7 @@ if __name__ == '__main__':
 
             # Путь к папке с томов
             volume_name = volume_info.get("name").replace(':', '.')
+            # TODO: dir вряд ли будет нужен
             volume_info["dir"] = os.path.join(DIR_RANOBE, ranobe_name, volume_name)
 
             # Добавляем том к списку томов
