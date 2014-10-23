@@ -72,8 +72,11 @@ if __name__ == '__main__':
 
     text_fb2 += '<title-info>'
 
+    # Имя тома
+    name_volume = volume_info['name']
+
     # Добавление имени тома
-    text_fb2 += '<book-title>' + volume_info['name'] + '</book-title>'
+    text_fb2 += '<book-title>' + name_volume + '</book-title>'
 
     # Добавление автора
     text_fb2 += '<author>'
@@ -145,9 +148,12 @@ if __name__ == '__main__':
     text_fb2 += '</description>'
 
 
-    # text_fb2 += '<body>'
-    # text_fb2 += '<p>' + 'Hello мир!' + '</p>'
-    # text_fb2 += '</body>'
+    text_fb2 += '<body>'
+    text_fb2 += '<title><p>{}</p></title>'.format(name_volume)
+    text_fb2 += '<section><title><p>Глава 0</p></title><p>Бла-бла-первая глава!</p></section>'
+    text_fb2 += '<section><title><p>Глава 1</p></title><p>Бла-бла-вторая глава!</p></section>'
+    text_fb2 += '<section><title><p>Глава 2</p></title><p>Бла-бла-третья глава!</p></section>'
+    text_fb2 += '</body>'
 
 
     # Добавление обложки
