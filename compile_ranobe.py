@@ -11,10 +11,24 @@ import json
 
 import generate_info_ranobe
 
+from xml.dom.minidom import parseString
+
 
 def pretty_xml(xml, ind=' ' * 2):
-    from xml.dom.minidom import parseString
+    """Функция принимает строку xml и выводит xml с отступами."""
+
     return parseString(xml).toprettyxml(indent=ind)
+
+
+from urllib.request import urlopen
+import base64
+
+
+def get_base64_url_image(url_image):
+    """Функция возвращает base64 изображения по url."""
+
+    image = urlopen(url_image)
+    return base64.b64encode(image.read()).decode("utf-8")
 
 
 # http://www.fictionbook.org/index.php/Описание_формата_FB2_от_Sclex
@@ -48,7 +62,6 @@ if __name__ == '__main__':
     text_fb2 = '<?xml version="1.0" encoding="UTF-8"?>'
     text_fb2 += ('<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0" '
                  'xmlns:xlink="http://www.w3.org/1999/xlink">')
-
 
     text_fb2 += '<description>'
 
@@ -92,9 +105,8 @@ if __name__ == '__main__':
     # Язык тома
     text_fb2 += '<lang>{}</lang>'.format('ru')
 
-    # TODO: Добавить обложку
     # Обложка тома
-    # text_fb2 += '<coverpage><image l:href="#cover.jpg"/></coverpage>'
+    text_fb2 += '<coverpage><image href="#cover.png"/></coverpage>'
 
     text_fb2 += '</title-info>'
 
@@ -129,11 +141,23 @@ if __name__ == '__main__':
     text_fb2 += '<isbn>{}</isbn>'.format(volume_info['ISBN'])
     text_fb2 += '</publish-info>'
 
-
     text_fb2 += '</description>'
 
 
     # text_fb2 += '<body>' + '<p>' + 'Hello мир!' + '</p>' + '</body>'
+
+
+    # Добавление обложки
+    url_cover = volume_info['url_cover']
+    # Определение суффикса/типа файла изображения
+    # # http://ruranobe.ru/w/images/3/3b/MKnR_v01_a.png -> png
+    # suffix = os.path.splitext(url_cover)[1][1:]
+    # text_fb2 += '<binary id="cover.{0}" content-type="image/{0}">'.format(suffix)
+
+    text_fb2 += '<binary id="cover.png" content-type="image/png">'
+    text_fb2 += get_base64_url_image(url_cover)
+    text_fb2 += '</binary>'
+
     text_fb2 += '</FictionBook>'
 
     # Открытие и перезапись файла ранобе
