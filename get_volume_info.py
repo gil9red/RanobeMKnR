@@ -54,6 +54,8 @@ def get_volume_base_page(url):
 
 # TODO: http://ruranobe.ru/r/mknr/v8/ss -- странный тип страницы
 # TODO: http://ruranobe.ru/r/mknr/v8/text -- странный тип страницы
+# TODO: Вести список типов страниц и обрабатывать их соответственно,
+# выводить предупреждение при нахождении типа страниц, которого нет в списке
 
 
 def volume_info(url_volume, url_ranobe):
