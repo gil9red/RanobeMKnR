@@ -61,13 +61,14 @@ if __name__ == '__main__':
 
     text_fb2 = '<?xml version="1.0" encoding="UTF-8"?>'
     text_fb2 += ('<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0" '
-                 'xmlns:xlink="http://www.w3.org/1999/xlink">')
+                 'xmlns:l="http://www.w3.org/1999/xlink">')
 
     text_fb2 += '<description>'
 
 
     # TODO: добавить информацию о переводчиках
 
+    # TODO: Добавить инфу о исходном языке (<src-lang>): японский
 
     text_fb2 += '<title-info>'
 
@@ -106,7 +107,7 @@ if __name__ == '__main__':
     text_fb2 += '<lang>{}</lang>'.format('ru')
 
     # Обложка тома
-    text_fb2 += '<coverpage><image href="#cover.png"/></coverpage>'
+    text_fb2 += '<coverpage><image l:href="#cover.png"/></coverpage>'
 
     text_fb2 += '</title-info>'
 
@@ -144,7 +145,9 @@ if __name__ == '__main__':
     text_fb2 += '</description>'
 
 
-    # text_fb2 += '<body>' + '<p>' + 'Hello мир!' + '</p>' + '</body>'
+    # text_fb2 += '<body>'
+    # text_fb2 += '<p>' + 'Hello мир!' + '</p>'
+    # text_fb2 += '</body>'
 
 
     # Добавление обложки
