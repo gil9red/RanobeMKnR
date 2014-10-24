@@ -11,6 +11,7 @@ import generate_info_ranobe
 
 from xml.dom.minidom import parseString
 
+
 def pretty_xml(xml, ind=' ' * 2):
     """Функция принимает строку xml и выводит xml с отступами."""
 
@@ -20,7 +21,7 @@ def pretty_xml(xml, ind=' ' * 2):
 # from lxml import etree
 #
 # def pretty_xml(xml_str):
-#     """Функция принимает строку xml и выводит xml с отступами."""
+# """Функция принимает строку xml и выводит xml с отступами."""
 #
 #     root = etree.fromstring(xml_str)
 #     return etree.tostring(root, pretty_print=True)
@@ -91,7 +92,6 @@ if __name__ == '__main__':
 
     # Путь к файлу ранобе
     path_volume_fb2 = os.path.join(ranobe_dir, name_volume_fb2)
-
 
     text_fb2 = ('<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0" '
                 'xmlns:l="http://www.w3.org/1999/xlink">')
@@ -180,8 +180,11 @@ if __name__ == '__main__':
 
     text_fb2 += '</description>'
 
-
     text_fb2 += '<body>'
+
+
+    text_fb2 += '<title><p>{}</p></title>'.format(name_volume)
+
 
     # Порядок глав (с типами страниц) в томе:
     #  i   - Начальные иллюстрации
@@ -191,9 +194,6 @@ if __name__ == '__main__':
     #  e   - Эпилог
     #  a   - Послесловие
     #  a2  - Запоздавший шедевр
-
-
-    text_fb2 += '<title><p>{}</p></title>'.format(name_volume)
 
     text_fb2 += add_chapter_to_fb2(volume_info.get('i'))
     text_fb2 += add_chapter_to_fb2(volume_info.get('p1'))

@@ -31,13 +31,13 @@ if __name__ == '__main__':
     series = None
     illustrator = None
 
-    print("Название: '{}'".format(ranobe_name))
-    print("\nАннотации:\n'{}'".format(annotation))
-    print("\nТома ({}):".format(len(list_volumes)))
+    # print("Название: '{}'".format(ranobe_name))
+    # print("\nАннотации:\n'{}'".format(annotation))
+    # print("\nТома ({}):".format(len(list_volumes)))
 
     volumes = list()
     for n, v in enumerate(list_volumes, 1):
-        print("Глава {}:".format(n))
+        # print("Глава {}:".format(n))
 
         # Соединение адреса к главной странице ранобе и относительной ссылки к тОму
         url_volume = urljoin(url, v.attr('href'))
@@ -59,27 +59,27 @@ if __name__ == '__main__':
             if not illustrator:
                 illustrator = volume_info.get("illustrator")
 
-            print("  Адрес тома: {}".format(url_volume))
-            print("  ALL: {}".format(volume_info))
-            print("    Название:    {}".format(volume_info.get("name")))
-            print("    Серия:       {}".format(series))
-            print("    Автор:       {}".format(author))
-            print("    Иллюстратор: {}".format(illustrator))
-            print("    ISBN:        {}".format(volume_info.get("ISBN")))
-            print("    Обложка:     {}".format(volume_info.get("url_cover")))
-            print("    Содержание:")
-            print("        Начальные иллюстрации: {}".format(volume_info.get("i")))
-            print("        Вступление: {}".format(volume_info.get("p1")))
-            print("        Пролог: {}".format(volume_info.get("p2")))
-            print("        Главы:")
-            for i, ch in enumerate(volume_info.get("chapters"), 1):
-                print("            {}. '{}'".format(i, ch))
-            print("        Эпилог: {}".format(volume_info.get("e")))
-            print("        Послесловие: {}".format(volume_info.get("a")))
-            print("        Запоздавший шедевр: {}".format(volume_info.get("a2")))
-        else:
-            print("Неудача с томом: {}".format(url_volume))
-        print()
+                # print("  Адрес тома: {}".format(url_volume))
+                #     print("  ALL: {}".format(volume_info))
+                #     print("    Название:    {}".format(volume_info.get("name")))
+                #     print("    Серия:       {}".format(series))
+                #     print("    Автор:       {}".format(author))
+                #     print("    Иллюстратор: {}".format(illustrator))
+                #     print("    ISBN:        {}".format(volume_info.get("ISBN")))
+                #     print("    Обложка:     {}".format(volume_info.get("url_cover")))
+                #     print("    Содержание:")
+                #     print("        Начальные иллюстрации: {}".format(volume_info.get("i")))
+                #     print("        Вступление: {}".format(volume_info.get("p1")))
+                #     print("        Пролог: {}".format(volume_info.get("p2")))
+                #     print("        Главы:")
+                #     for i, ch in enumerate(volume_info.get("chapters"), 1):
+                #         print("            {}. '{}'".format(i, ch))
+                #     print("        Эпилог: {}".format(volume_info.get("e")))
+                #     print("        Послесловие: {}".format(volume_info.get("a")))
+                #     print("        Запоздавший шедевр: {}".format(volume_info.get("a2")))
+                # else:
+                #     print("Неудача с томом: {}".format(url_volume))
+                # print()
 
     # Создадим файл, содержащий описание к ранобе: название, автор, аннотацию и т.п.
     with open(RANOBE_INFO_PATH, mode='w', encoding='utf8') as f:
