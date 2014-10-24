@@ -141,12 +141,14 @@ def volume_info(url_volume, url_ranobe):
         # Разбиение списка глав соответственно с типами страниц:
         # главы -- отдельно, а все остальное тоже отдельно.
 
+        href_text = url_chapter, ch.text()
+
         # Если типом страницы является глава:
         if volume_base_page.startswith("c"):
             # Добавление адреса главы к списку
-            chapters.append(url_chapter)
+            chapters.append(href_text)
         else:
             # Добавляем в словарь типа страниц
-            info[volume_base_page] = url_chapter
+            info[volume_base_page] = href_text
 
     return info

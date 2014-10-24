@@ -1,5 +1,3 @@
-from get_ranobe_info import ranobe_info
-
 __author__ = 'ipetrash'
 
 """Скрипт, используя данные скриптов get_ranobe_info и download_ranobe,
@@ -13,11 +11,19 @@ import generate_info_ranobe
 
 from xml.dom.minidom import parseString
 
-
 def pretty_xml(xml, ind=' ' * 2):
     """Функция принимает строку xml и выводит xml с отступами."""
 
     return parseString(xml).toprettyxml(indent=ind)
+
+
+# from lxml import etree
+#
+# def pretty_xml(xml_str):
+#     """Функция принимает строку xml и выводит xml с отступами."""
+#
+#     root = etree.fromstring(xml_str)
+#     return etree.tostring(root, pretty_print=True)
 
 
 from urllib.request import urlopen
@@ -29,6 +35,33 @@ def get_base64_url_image(url_image):
 
     image = urlopen(url_image)
     return base64.b64encode(image.read()).decode("utf-8")
+
+
+from grab import Grab
+
+
+def add_chapter_to_fb2(url_chapter):
+    """Скачивает главу по ссылке, формирует секцию section fb2 и заполняет ее"""
+
+    if not url_chapter:
+        return ''
+
+    url, name = url_chapter
+
+    g = Grab()
+    g.go(url)
+
+    # # Получение основного контекста, имеющий номер главы и
+    # content_text = g.doc.select('//div[@id="mw-content-text"]')
+
+    # # Получение и объединение параграфов в единый текст
+    # content = ''.join('<p>{}</p>'.format(r.text()) for r in content_text.select('p'))
+
+    section = '<section>'
+    section += '<title><p>{}</p></title>'.format(name)
+    # section += content
+    section += '</section>'
+    return section
 
 
 # http://www.fictionbook.org/index.php/Описание_формата_FB2_от_Sclex
@@ -59,9 +92,9 @@ if __name__ == '__main__':
     # Путь к файлу ранобе
     path_volume_fb2 = os.path.join(ranobe_dir, name_volume_fb2)
 
-    text_fb2 = '<?xml version="1.0" encoding="UTF-8"?>'
-    text_fb2 += ('<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0" '
-                 'xmlns:l="http://www.w3.org/1999/xlink">')
+
+    text_fb2 = ('<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0" '
+                'xmlns:l="http://www.w3.org/1999/xlink">')
 
     text_fb2 += '<description>'
 
@@ -154,25 +187,25 @@ if __name__ == '__main__':
     #  i   - Начальные иллюстрации
     #  p1  - Вступление
     #  p2  - Пролог
-    #  ch% - Глава %
-    #  c%  - Глава %
+    #  ch  - Главы
     #  e   - Эпилог
     #  a   - Послесловие
     #  a2  - Запоздавший шедевр
-    #  at  - Послесловие команды перевода
-    #
-    # volume_info['i']
-    # volume_info['p1']
-    # volume_info['p2']
-    # volume_info['chapters']
-    # volume_info['e']
-    # volume_info['a']
-    # volume_info['a2']
+
 
     text_fb2 += '<title><p>{}</p></title>'.format(name_volume)
-    text_fb2 += '<section><title><p>Глава 0</p></title><p>Бла-бла-первая глава!</p></section>'
-    text_fb2 += '<section><title><p>Глава 1</p></title><p>Бла-бла-вторая глава!</p></section>'
-    text_fb2 += '<section><title><p>Глава 2</p></title><p>Бла-бла-третья глава!</p></section>'
+
+    text_fb2 += add_chapter_to_fb2(volume_info.get('i'))
+    text_fb2 += add_chapter_to_fb2(volume_info.get('p1'))
+    text_fb2 += add_chapter_to_fb2(volume_info.get('p2'))
+
+    for url in volume_info.get('chapters'):
+        text_fb2 += add_chapter_to_fb2(url)
+
+    text_fb2 += add_chapter_to_fb2(volume_info.get('e'))
+    text_fb2 += add_chapter_to_fb2(volume_info.get('a'))
+    text_fb2 += add_chapter_to_fb2(volume_info.get('a2'))
+
     text_fb2 += '</body>'
 
 
@@ -191,5 +224,6 @@ if __name__ == '__main__':
 
     # Открытие и перезапись файла ранобе
     with open(path_volume_fb2, mode='w', encoding='utf8') as f:
-        xml = pretty_xml(text_fb2)
-        f.write(xml)
+        xml = '<?xml version="1.0" encoding="UTF-8"?>' + '\n'
+        xml += text_fb2
+        f.write(pretty_xml(xml))
