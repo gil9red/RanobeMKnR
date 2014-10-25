@@ -88,6 +88,7 @@ if __name__ == '__main__':
 
     # TODO: имя файла с томом ранобе нужно такое же как и название тома
     # Название файла тома ранобе
+    # name_volume_fb2 = volume_info['name'].replace(':', '.') + '.fb2'
     name_volume_fb2 = 'ranobe.fb2'
 
     # Путь к файлу ранобе
@@ -191,6 +192,7 @@ if __name__ == '__main__':
     #  p1  - Вступление
     #  p2  - Пролог
     #  ch  - Главы
+    #  ss  - Дополнительная история
     #  e   - Эпилог
     #  a   - Послесловие
     #  a2  - Запоздавший шедевр
@@ -202,6 +204,7 @@ if __name__ == '__main__':
     for url in volume_info.get('chapters'):
         text_fb2 += add_chapter_to_fb2(url)
 
+    text_fb2 += add_chapter_to_fb2(volume_info.get('ss'))
     text_fb2 += add_chapter_to_fb2(volume_info.get('e'))
     text_fb2 += add_chapter_to_fb2(volume_info.get('a'))
     text_fb2 += add_chapter_to_fb2(volume_info.get('a2'))
