@@ -188,26 +188,35 @@ if __name__ == '__main__':
 
 
     # Порядок глав (с типами страниц) в томе:
-    #  i   - Начальные иллюстрации
-    #  p1  - Вступление
-    #  p2  - Пролог
-    #  ch  - Главы
-    #  ss  - Дополнительная история
-    #  e   - Эпилог
-    #  a   - Послесловие
-    #  a2  - Запоздавший шедевр
+    # text - Содержание
+    # i    - Начальные иллюстрации
+    # p1   - Вступление
+    # p2   - Пролог
+    # c    - Глава (т.е. страницы, начинающиеся с 'c': 'ch*', c*ch*)
+    # e    - Эпилог
+    # ss   - Похоже на дополнительную инфу
+    # a    - Послесловие
+    # a2   - Запоздавший шедевр
+    # at   - Послесловие команды перевода
 
-    text_fb2 += add_chapter_to_fb2(volume_info.get('i'))
-    text_fb2 += add_chapter_to_fb2(volume_info.get('p1'))
-    text_fb2 += add_chapter_to_fb2(volume_info.get('p2'))
+    # Список глав тома
+    chapters = volume_info.get("pages").get("chapters")
 
-    for url in volume_info.get('chapters'):
-        text_fb2 += add_chapter_to_fb2(url)
+    # Словарь страниц тома, которые не относятся к главам: послесловие, пролог, и т.д.
+    other_pages = volume_info.get("pages").get("other")
 
-    text_fb2 += add_chapter_to_fb2(volume_info.get('ss'))
-    text_fb2 += add_chapter_to_fb2(volume_info.get('e'))
-    text_fb2 += add_chapter_to_fb2(volume_info.get('a'))
-    text_fb2 += add_chapter_to_fb2(volume_info.get('a2'))
+
+    text_fb2 += add_chapter_to_fb2(other_pages.get('i'))
+    text_fb2 += add_chapter_to_fb2(other_pages.get('p1'))
+    text_fb2 += add_chapter_to_fb2(other_pages.get('p2'))
+
+    for url_ch in chapters:
+        text_fb2 += add_chapter_to_fb2(url_ch)
+
+    text_fb2 += add_chapter_to_fb2(other_pages.get('e'))
+    text_fb2 += add_chapter_to_fb2(other_pages.get('ss'))
+    text_fb2 += add_chapter_to_fb2(other_pages.get('a'))
+    text_fb2 += add_chapter_to_fb2(other_pages.get('a2'))
 
     text_fb2 += '</body>'
 

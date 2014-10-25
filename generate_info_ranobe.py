@@ -59,8 +59,14 @@ if __name__ == '__main__':
             if not illustrator:
                 illustrator = volume_info.get("illustrator")
 
+            # Список глав тома
+            chapters = volume_info.get("pages").get("chapters")
+
+            # Словарь страниц тома, которые не относятся к главам: послесловие, пролог, и т.д.
+            other_pages = volume_info.get("pages").get("other")
+
             print("  Адрес тома: {}".format(url_volume))
-            print("  ALL: {}".format(volume_info))
+            # print("  ALL: {}".format(volume_info))
             print("    Название:    {}".format(volume_info.get("name")))
             print("    Серия:       {}".format(series))
             print("    Автор:       {}".format(author))
@@ -70,17 +76,19 @@ if __name__ == '__main__':
             print("    Перевод:     {}".format(', '.join(volume_info.get("translation").get('translators'))))
             print("    Обложка:     {}".format(volume_info.get("url_cover")))
             print("    Содержание:")
-            print("        Начальные иллюстрации: {}".format(volume_info.get("i")))
-            print("        Вступление: {}".format(volume_info.get("p1")))
-            print("        Пролог: {}".format(volume_info.get("p2")))
+            print("        Начальные иллюстрации: {}".format(other_pages.get("i")))
+            print("        Вступление: {}".format(other_pages.get("p1")))
+            print("        Пролог: {}".format(other_pages.get("p2")))
             print("        Главы:")
-            for i, ch in enumerate(volume_info.get("chapters"), 1):
-                print("            {}. '{}'".format(i, ch))
-            print("        Эпилог: {}".format(volume_info.get("e")))
-            print("        Послесловие: {}".format(volume_info.get("a")))
-            print("        Запоздавший шедевр: {}".format(volume_info.get("a2")))
+            for i, ch in enumerate(chapters, 1):
+                ch_url, ch_name = ch
+                print("            {}. '{}': {}".format(i, ch_name, ch_url))
+            print("        Эпилог: {}".format(other_pages.get("e")))
+            print("        Послесловие: {}".format(other_pages.get("a")))
+            print("        Запоздавший шедевр: {}".format(other_pages.get("a2")))
         else:
             print("Неудача с томом: {}".format(url_volume))
+
         print()
 
     # Создадим файл, содержащий описание к ранобе: название, автор, аннотацию и т.п.

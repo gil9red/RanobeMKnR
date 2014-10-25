@@ -40,21 +40,42 @@ def get_volume_base_page(url):
     return base_url
 
 
-# Типы страниц в томе:
-#  i    - Начальные иллюстрации
-#  p1   - Вступление
-#  p2   - Пролог
-#  ch%  - Глава %
-#  c%   - Глава %
-#  e    - Эпилог
-#  a    - Послесловие
-#  a2   - Запоздавший шедевр
-#  at   - Послесловие команды перевода
-#  text - Содержание
-#  ss   - Похоже на дополнительную инфу
+# Список типов страниц тома
+PAGE_TYPES_VOLUME = (
+    'text',  # Содержание
+    'i',     # Начальные иллюстрации
+    'p1',    # Вступление
+    'p2',    # Пролог
+    'c',     # Страницы, которые начинаются с 'c' ('ch*', c*ch*)
+    'e',     # Эпилог
+    'ss',    # Дополнительная история
+    'a',     # Послесловие
+    'a2',    # Запоздавший шедевр
+    'at',    # Послесловие команды перевода
+)
 
-# TODO: Вести список типов страниц и обрабатывать их соответственно,
-# выводить предупреждение при нахождении типа страниц, которого нет в списке
+# Тип страниц тома, которые не будут добавлены в файл инфо
+BLACK_LIST_PAGE_TYPES = ('at', 'text')
+
+
+def check_type_volume_pages(type_page):
+    """Функция для проверки тип страниц тома. Если типа страниц
+    type_page нет в списке, то функция вернет False, иначе True.
+    """
+    # Проверим тип страницы
+    for t in PAGE_TYPES_VOLUME:
+        # Если начало типа страницы совпадает с тем, что в списке, значит
+        # такая страница есть
+        if type_page.startswith(t):
+            # Выходим из функции и возвращаем True
+            return True
+
+    # Страница не найдена в списке
+    return False
+
+
+def type_pages_is_chapter(type_pages):
+    return type_pages.startswith("c")
 
 
 def volume_info(url_volume, url_ranobe):
@@ -98,6 +119,9 @@ def volume_info(url_volume, url_ranobe):
     # Список глав тома
     chapters = list()
 
+    # Остальные страниц, которые не относятся к главам тома
+    other_pages = dict()
+
     # Словарь содержит информацию о томе
     info = {
         "name": volume_name,
@@ -106,7 +130,10 @@ def volume_info(url_volume, url_ranobe):
         "illustrator": illustrator,
         "ISBN": volume_isbn,
         "url_cover": url_cover_volume,
-        "chapters": chapters,
+        "pages": {
+            "chapters": chapters,
+            "other": other_pages,
+        },
         "translation": {
             "team": tr_team,  # команда перевода
             "translators": translators,  # переводчики
@@ -126,8 +153,15 @@ def volume_info(url_volume, url_ranobe):
         # Типы страниц описаны выше данной функции.
         volume_base_page = get_volume_base_page(url_chapter)
 
-        # Послесловие команды перевода не относится напрямую к ранобе, поэтому оно не будет включено
-        if volume_base_page == "at":
+        # TODO: учитывать, что главы могут делать на части,
+        # например: c6ch1, c6ch2, c6ch3, c6ch4
+
+        # Проверим тип страницы: если страница не найдена:
+        if not check_type_volume_pages(volume_base_page):
+            print('!!! Неизвестный тип страниц тома: {}'.format(volume_base_page))
+
+        # Фильтр типов страниц, которые не будут добавлены в файл инфо
+        if volume_base_page in BLACK_LIST_PAGE_TYPES:
             continue
 
         # Тут мы проверяем наличие глав тома: если не удачно, выходим из функции, без возврата тома
@@ -137,7 +171,7 @@ def volume_info(url_volume, url_ranobe):
             # Если типом является глава, выходим -- нам не нужен том, у которого будут отсутствовать
             # какие то главы, а вот все остальным ("Начальные иллюстрации", "Пролог", "Эпилог",
             # "Послесловие", и т.п.) можно пренебречь
-            if volume_base_page.startswith("c"):
+            if type_pages_is_chapter(volume_base_page):
                 return
 
             # Пропускаем добавление страницы в список
@@ -149,11 +183,11 @@ def volume_info(url_volume, url_ranobe):
         href_text = url_chapter, ch.text()
 
         # Если типом страницы является глава:
-        if volume_base_page.startswith("c"):
+        if type_pages_is_chapter(volume_base_page):
             # Добавление адреса главы к списку
             chapters.append(href_text)
         else:
-            # Добавляем в словарь типа страниц
-            info[volume_base_page] = href_text
+            # Добавляем в словарь данную страницу, которая не относится к главам
+            other_pages[volume_base_page] = href_text
 
     return info
