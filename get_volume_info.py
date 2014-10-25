@@ -42,7 +42,6 @@ def get_volume_base_page(url):
 
 # Список типов страниц тома
 PAGE_TYPES_VOLUME = (
-    'text',  # Содержание
     'i',     # Начальные иллюстрации
     'p1',    # Вступление
     'p2',    # Пролог
@@ -55,7 +54,7 @@ PAGE_TYPES_VOLUME = (
 )
 
 # Тип страниц тома, которые не будут добавлены в файл инфо
-BLACK_LIST_PAGE_TYPES = ('at', 'text')
+BLACK_LIST_PAGE_TYPES = ('at', )
 
 
 def check_type_volume_pages(type_page):
@@ -92,7 +91,7 @@ def volume_info(url_volume, url_ranobe):
         return
 
     # Получение списка глав из оглавления
-    contents = g.doc.select('//div[@id="index"]//a')
+    contents = g.doc.select('//div[@id="index"]//li/a')
     # Если нет содержания -- пропускаем том
     if not contents:
         print("Нет содержания: {}".format(url_volume))
