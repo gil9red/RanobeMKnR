@@ -41,19 +41,18 @@ def get_volume_base_page(url):
 
 
 # Типы страниц в томе:
-# i   - Начальные иллюстрации
-#  p1  - Вступление
-#  p2  - Пролог
-#  ch% - Глава %
-#  c%  - Глава %
-#  e   - Эпилог
-#  a   - Послесловие
-#  a2  - Запоздавший шедевр
-#  at  - Послесловие команды перевода
+#  i    - Начальные иллюстрации
+#  p1   - Вступление
+#  p2   - Пролог
+#  ch%  - Глава %
+#  c%   - Глава %
+#  e    - Эпилог
+#  a    - Послесловие
+#  a2   - Запоздавший шедевр
+#  at   - Послесловие команды перевода
+#  text - Содержание
+#  ss   - Похоже на дополнительную инфу
 
-
-# TODO: http://ruranobe.ru/r/mknr/v8/ss -- странный тип страницы
-# TODO: http://ruranobe.ru/r/mknr/v8/text -- странный тип страницы
 # TODO: Вести список типов страниц и обрабатывать их соответственно,
 # выводить предупреждение при нахождении типа страниц, которого нет в списке
 
@@ -68,7 +67,6 @@ def volume_info(url_volume, url_ranobe):
     g.go(url_volume)
 
     if g.response.code != 200:
-        # TODO: кажется, лучше выкидывать исключения с описанием причины
         print("Страница: {}, код возврата: {}".format(url_volume, g.response.code))
         return
 
@@ -76,7 +74,6 @@ def volume_info(url_volume, url_ranobe):
     contents = g.doc.select('//div[@id="index"]//a')
     # Если нет содержания -- пропускаем том
     if not contents:
-        # TODO: кажется, лучше выкидывать исключения с описанием причины
         print("Нет содержания: {}".format(url_volume))
         return
 
@@ -87,11 +84,16 @@ def volume_info(url_volume, url_ranobe):
     # некоторую информацию о томе: названия на нескольких языка, серия,
     # автор, иллюстратор и т.п.
     list_info = g.doc.select('//table[@id="release-info"]/tr/td[2]')
+    # volume_ja_name = list_info[0].text()  # Название тома на японском
+    # volume_en_name = list_info[1].text()  # Название тома на английском
     volume_name = list_info[2].text()
     series = list_info[3].text()
     author = list_info[4].text()
     illustrator = list_info[5].text()
     volume_isbn = list_info[6].text()
+    # status = list_info[7].text()  # Статус (наверное, статус перевода)
+    tr_team = list_info[8].text()
+    translators = list_info[9].text().split(', ')
 
     # Список глав тома
     chapters = list()
@@ -105,6 +107,10 @@ def volume_info(url_volume, url_ranobe):
         "ISBN": volume_isbn,
         "url_cover": url_cover_volume,
         "chapters": chapters,
+        "translation": {
+            "team": tr_team,  # команда перевода
+            "translators": translators,  # переводчики
+        },
     }
 
     for ch in contents:
@@ -126,7 +132,6 @@ def volume_info(url_volume, url_ranobe):
 
         # Тут мы проверяем наличие глав тома: если не удачно, выходим из функции, без возврата тома
         if grab_chapter.response.code != 200:
-            # TODO: кажется, лучше выкидывать исключения с описанием причины
             print("Не найдена глава: {}".format(url_chapter))
 
             # Если типом является глава, выходим -- нам не нужен том, у которого будут отсутствовать
