@@ -1,7 +1,8 @@
 __author__ = 'ipetrash'
 
-from grab import Grab
 from urllib.parse import urljoin
+
+from grab import Grab
 
 
 def get_chapters(grab_url_volume):
@@ -49,10 +50,7 @@ if __name__ == '__main__':
                 print("    '{}': {}".format(sub_name, sub_url))
 
 
-# g = Grab()
-# g.go('http://ruranobe.ru/r/mknr/v1/ch1')
-#
-# # Получение основного контекста, имеющий номер главы и
-# content_text = g.doc.select('//div[@id="mw-content-text"]')
-#
-# print(content_text.html())
+                # # Получение основного контекста, имеющий номер главы и
+                # content_text = g.doc.select('//div[@id="mw-content-text"]')
+                #
+                # print(content_text.html())

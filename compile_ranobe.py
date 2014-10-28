@@ -23,7 +23,7 @@ def pretty_xml(xml, ind=' ' * 2):
 # def pretty_xml(xml_str):
 # """Функция принимает строку xml и выводит xml с отступами."""
 #
-#     root = etree.fromstring(xml_str)
+# root = etree.fromstring(xml_str)
 #     return etree.tostring(root, pretty_print=True)
 
 
@@ -183,7 +183,6 @@ if __name__ == '__main__':
 
     text_fb2 += '<body>'
 
-
     text_fb2 += '<title><p>{}</p></title>'.format(name_volume)
 
 
@@ -203,7 +202,6 @@ if __name__ == '__main__':
 
     # Словарь страниц тома, которые не относятся к главам: послесловие, пролог, и т.д.
     other_pages = volume_info.get("pages").get("other")
-
 
     text_fb2 += add_chapter_to_fb2(other_pages.get('i'))
     text_fb2 += add_chapter_to_fb2(other_pages.get('p1'))
