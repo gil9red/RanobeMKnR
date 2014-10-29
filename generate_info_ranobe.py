@@ -81,8 +81,15 @@ if __name__ == '__main__':
             print("        Пролог: {}".format(other_pages.get("p2")))
             print("        Главы:")
             for i, ch in enumerate(chapters, 1):
-                ch_url, ch_name = ch
-                print("            {}. '{}': {}".format(i, ch_name, ch_url))
+                ch_name, ch_url = ch
+                if not isinstance(ch_url, list):
+                    print("            {}. '{}': {}".format(i, ch_name, ch_url))
+                else:
+                    print("            {}. '{}':".format(i, ch_name))
+                    for j, sub_ch in enumerate(ch_url, 1):
+                        sub_name, sub_url = sub_ch
+                        print("                {}. '{}': {}".format(j, sub_name, sub_url))
+
             print("        Эпилог: {}".format(other_pages.get("e")))
             print("        Послесловие: {}".format(other_pages.get("a")))
             print("        Запоздавший шедевр: {}".format(other_pages.get("a2")))

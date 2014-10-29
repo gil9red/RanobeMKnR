@@ -77,6 +77,69 @@ def type_pages_is_chapter(type_pages):
     return type_pages.startswith("c")
 
 
+def get_volume_pages(grab_url_volume):
+    """Функция возвращает содержание тома с учетом двух уровней
+    вложенности: главы и подглавы"""
+
+    # Адрес тома
+    url_volume = grab_url_volume.response.url
+
+    # Получение списка глав из оглавления
+    content = grab_url_volume.doc.select('//div[@id="index"]/ol/li')
+
+    chapters = list()
+
+    for c in content:
+        # Проверяем на подсписок
+        if c.node.find('ol') is not None:
+            sub_chapters = list()
+            chapters.append((c.node.text.strip(), sub_chapters))
+
+            # Подсписок:
+            for ch in content.select('ol/li/a'):
+                url_ch = urljoin(url_volume, ch.attr('href'))
+                sub_chapters.append((ch.text(), url_ch))
+        else:
+            url_ch = urljoin(url_volume, c.select('a').attr('href'))
+            chapters.append((c.text(), url_ch))
+
+    return chapters
+
+
+def check_volume_page(url_page):
+    # Проверка на существование страницы с главой
+    grab_chapter = Grab()
+    grab_chapter.setup(hammer_mode=True)
+    grab_chapter.go(url_page)
+
+    # Тип страницы тома может быть "Начальные иллюстрации", "Пролог", сами главы, и т.п.
+    # Типы страниц описаны выше данной функции.
+    volume_base_page = get_volume_base_page(url_page)
+
+    # Проверим тип страницы: если страница не найдена:
+    if not check_type_volume_pages(volume_base_page):
+        print('!!! Неизвестный тип страниц тома: {}'.format(volume_base_page))
+
+    # Фильтр типов страниц, которые не будут добавлены в файл инфо
+    if volume_base_page in BLACK_LIST_PAGE_TYPES:
+        return None
+
+    # Тут мы проверяем наличие глав тома: если не удачно, выходим из функции, без возврата тома
+    if grab_chapter.response.code != 200:
+        print("Не найдена глава: {}".format(url_page))
+
+        # Если типом является глава, выходим -- нам не нужен том, у которого будут отсутствовать
+        # какие то главы, а вот все остальным ("Начальные иллюстрации", "Пролог", "Эпилог",
+        # "Послесловие", и т.п.) можно пренебречь
+        if type_pages_is_chapter(volume_base_page):
+            return False
+
+        # Пропускаем добавление страницы в список
+        return None
+
+    return True
+
+
 def volume_info(url_volume, url_ranobe):
     """Функция возвращает словарь, содержащий информацию о томе ранобе."""
 
@@ -90,13 +153,6 @@ def volume_info(url_volume, url_ranobe):
         print("Страница: {}, код возврата: {}".format(url_volume, g.response.code))
         return
 
-    # Получение списка глав из оглавления
-    contents = g.doc.select('//div[@id="index"]//li/a')
-    # Если нет содержания -- пропускаем том
-    if not contents:
-        print("Нет содержания: {}".format(url_volume))
-        return
-
     # Ссылка к картинке обложки тома
     url_cover_volume = get_url2full_image_cover(g.clone(), url_ranobe)
 
@@ -104,16 +160,37 @@ def volume_info(url_volume, url_ranobe):
     # некоторую информацию о томе: названия на нескольких языка, серия,
     # автор, иллюстратор и т.п.
     list_info = g.doc.select('//table[@id="release-info"]/tr/td[2]')
-    # volume_ja_name = list_info[0].text()  # Название тома на японском
-    # volume_en_name = list_info[1].text()  # Название тома на английском
-    volume_name = list_info[2].text()
-    series = list_info[3].text()
-    author = list_info[4].text()
-    illustrator = list_info[5].text()
-    volume_isbn = list_info[6].text()
-    # status = list_info[7].text()  # Статус (наверное, статус перевода)
-    tr_team = list_info[8].text()
-    translators = list_info[9].text().split(', ')
+    # volume_ja_name = None  # Название тома на японском
+    # volume_en_name = None  # Название тома на английском
+    volume_name = None
+    series = None
+    author = None
+    illustrator = None
+    volume_isbn = None
+    # status = None  # Статус (наверное, статус перевода)
+    tr_team = None
+    translators = None
+
+    try:
+        # volume_ja_name = list_info[0].text()  # Название тома на японском
+        # volume_en_name = list_info[1].text()  # Название тома на английском
+        volume_name = list_info[2].text()
+        series = list_info[3].text()
+        author = list_info[4].text()
+        illustrator = list_info[5].text()
+        volume_isbn = list_info[6].text()
+        # status = list_info[7].text()  # Статус (наверное, статус перевода)
+        tr_team = list_info[8].text()
+        translators = list_info[9].text().split(', ')
+    except IndexError:
+        print("Не хватает полей с информацией о томе: {}".format(url_volume))
+
+    # Получение списка глав тома из оглавления
+    volume_pages = get_volume_pages(g)
+    # Если нет содержания -- пропускаем том
+    if not volume_pages:
+        print("Нет содержания: {}".format(url_volume))
+        return
 
     # Список глав тома
     chapters = list()
@@ -139,54 +216,45 @@ def volume_info(url_volume, url_ranobe):
         },
     }
 
-    for ch in contents:
+    # Переберем все страницы тома
+    for page in volume_pages:
         # Адрес к главе тома
-        url_chapter = urljoin(url_ranobe, ch.attr("href"))
+        name_ch, url_ch = page
 
-        # Проверка на существование страницы с главой
-        grab_chapter = Grab()
-        grab_chapter.setup(hammer_mode=True)
-        grab_chapter.go(url_chapter)
-
-        # Тип страницы тома может быть "Начальные иллюстрации", "Пролог", сами главы, и т.п.
-        # Типы страниц описаны выше данной функции.
-        volume_base_page = get_volume_base_page(url_chapter)
-
-        # TODO: учитывать, что главы могут быть разделены на части (на подглавы),
-        # например: c6ch1, c6ch2, c6ch3, c6ch4
-
-        # Проверим тип страницы: если страница не найдена:
-        if not check_type_volume_pages(volume_base_page):
-            print('!!! Неизвестный тип страниц тома: {}'.format(volume_base_page))
-
-        # Фильтр типов страниц, которые не будут добавлены в файл инфо
-        if volume_base_page in BLACK_LIST_PAGE_TYPES:
-            continue
-
-        # Тут мы проверяем наличие глав тома: если не удачно, выходим из функции, без возврата тома
-        if grab_chapter.response.code != 200:
-            print("Не найдена глава: {}".format(url_chapter))
-
-            # Если типом является глава, выходим -- нам не нужен том, у которого будут отсутствовать
-            # какие то главы, а вот все остальным ("Начальные иллюстрации", "Пролог", "Эпилог",
-            # "Послесловие", и т.п.) можно пренебречь
-            if type_pages_is_chapter(volume_base_page):
+        if not isinstance(url_ch, list):
+            check = check_volume_page(url_ch)
+            if check is False:
                 return
-
-            # Пропускаем добавление страницы в список
-            continue
+            elif check is None:
+                continue
+        else:
+            # Проверяем подглавы:
+            for sub_ch in url_ch:
+                sub_name, sub_url = sub_ch
+                check = check_volume_page(sub_url)
+                if check is False:
+                    return
+                elif check is None:
+                    continue
 
         # Разбиение списка глав соответственно с типами страниц:
         # главы -- отдельно, а все остальное тоже отдельно.
 
-        href_text = url_chapter, ch.text()
-
-        # Если типом страницы является глава:
-        if type_pages_is_chapter(volume_base_page):
-            # Добавление адреса главы к списку
-            chapters.append(href_text)
+        # Если адресом является список подглав
+        if isinstance(url_ch, list):
+            # Добавление списка подглав
+            chapters.append(page)
         else:
-            # Добавляем в словарь данную страницу, которая не относится к главам
-            other_pages[volume_base_page] = href_text
+            # Тип страницы тома может быть "Начальные иллюстрации", "Пролог", сами главы, и т.п.
+            # Типы страниц описаны выше данной функции.
+            volume_base_page = get_volume_base_page(url_ch)
+
+            # Если типом страницы является глава:
+            if type_pages_is_chapter(volume_base_page):
+                # Добавление адреса главы к списку
+                chapters.append(page)
+            else:
+                # Добавляем в словарь данную страницу, которая не относится к главам
+                other_pages[volume_base_page] = page
 
     return info

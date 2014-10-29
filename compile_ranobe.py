@@ -47,20 +47,30 @@ def add_chapter_to_fb2(url_chapter):
     if not url_chapter:
         return ''
 
-    url, name = url_chapter
-
-    g = Grab()
-    g.go(url)
-
-    # # Получение основного контекста, имеющий номер главы и
-    # content_text = g.doc.select('//div[@id="mw-content-text"]')
-
-    # # Получение и объединение параграфов в единый текст
-    # content = ''.join('<p>{}</p>'.format(r.text()) for r in content_text.select('p'))
+    name, url = url_chapter
 
     section = '<section>'
     section += '<title><p>{}</p></title>'.format(name)
-    # section += content
+
+    # Если список, тогда создаем вложенную секцию с подглавами
+    if isinstance(url, list):
+        for sub_ch in url:
+            section += add_chapter_to_fb2(sub_ch)
+    else:
+        g = Grab()
+        g.go(url)
+
+        # # Получение основного контекста, имеющий номер главы и
+        # content_text = g.doc.select('//div[@id="mw-content-text"]')
+
+        # # Получение и объединение параграфов в единый текст
+        # content = ''.join('<p>{}</p>'.format(r.text()) for r in content_text.select('p'))
+
+        # TODO: удалить
+        content = '<p>{}</p>'.format(g.response.url)
+
+        section += content
+
     section += '</section>'
     return section
 
@@ -84,7 +94,7 @@ if __name__ == '__main__':
 
 
     # Первый том
-    volume_info = ranobe_info['volumes'][0]
+    volume_info = ranobe_info['volumes'][4]
 
     # TODO: имя файла с томом ранобе нужно такое же как и название тома
     # Название файла тома ранобе
@@ -207,6 +217,7 @@ if __name__ == '__main__':
     text_fb2 += add_chapter_to_fb2(other_pages.get('p1'))
     text_fb2 += add_chapter_to_fb2(other_pages.get('p2'))
 
+    # Перебор список глав:
     for url_ch in chapters:
         text_fb2 += add_chapter_to_fb2(url_ch)
 
