@@ -31,14 +31,9 @@ if __name__ == '__main__':
     series = None
     illustrator = None
 
-    print("Название: '{}'".format(ranobe_name))
-    print("\nАннотации:\n'{}'".format(annotation))
-    print("\nТома ({}):".format(len(list_volumes)))
-
     volumes = list()
-    for n, v in enumerate(list_volumes, 1):
-        print("Глава {}:".format(n))
 
+    for n, v in enumerate(list_volumes, 1):
         # Соединение адреса к главной странице ранобе и относительной ссылки к тОму
         url_volume = urljoin(url, v.attr('href'))
 
@@ -64,39 +59,6 @@ if __name__ == '__main__':
 
             # Словарь страниц тома, которые не относятся к главам: послесловие, пролог, и т.д.
             other_pages = volume_info.get("pages").get("other")
-
-            print("  Адрес тома: {}".format(url_volume))
-            # print("  ALL: {}".format(volume_info))
-            print("    Название:    {}".format(volume_info.get("name")))
-            print("    Серия:       {}".format(series))
-            print("    Автор:       {}".format(author))
-            print("    Иллюстратор: {}".format(illustrator))
-            print("    ISBN:        {}".format(volume_info.get("ISBN")))
-            print("    Команда:     {}".format(volume_info.get("translation").get("team")))
-            print("    Перевод:     {}".format(', '.join(volume_info.get("translation").get('translators'))))
-            print("    Обложка:     {}".format(volume_info.get("url_cover")))
-            print("    Содержание:")
-            print("        Начальные иллюстрации: {}".format(other_pages.get("i")))
-            print("        Вступление: {}".format(other_pages.get("p1")))
-            print("        Пролог: {}".format(other_pages.get("p2")))
-            print("        Главы:")
-            for i, ch in enumerate(chapters, 1):
-                ch_name, ch_url = ch
-                if not isinstance(ch_url, list):
-                    print("            {}. '{}': {}".format(i, ch_name, ch_url))
-                else:
-                    print("            {}. '{}':".format(i, ch_name))
-                    for j, sub_ch in enumerate(ch_url, 1):
-                        sub_name, sub_url = sub_ch
-                        print("                {}. '{}': {}".format(j, sub_name, sub_url))
-
-            print("        Эпилог: {}".format(other_pages.get("e")))
-            print("        Послесловие: {}".format(other_pages.get("a")))
-            print("        Запоздавший шедевр: {}".format(other_pages.get("a2")))
-        else:
-            print("Неудача с томом: {}".format(url_volume))
-
-        print()
 
     # Создадим файл, содержащий описание к ранобе: название, автор, аннотацию и т.п.
     with open(RANOBE_INFO_PATH, mode='w', encoding='utf8') as f:
