@@ -24,7 +24,7 @@ def pretty_xml(xml, ind=' ' * 2):
 # """Функция принимает строку xml и выводит xml с отступами."""
 #
 # root = etree.fromstring(xml_str)
-#     return etree.tostring(root, pretty_print=True)
+# return etree.tostring(root, pretty_print=True)
 
 
 from urllib.request import urlopen
@@ -109,11 +109,9 @@ if __name__ == '__main__':
 
     text_fb2 += '<description>'
 
-
     # TODO: добавить информацию о переводчиках
 
-    # TODO: Добавить инфу о исходном языке (<src-lang>): японский
-
+    # title-info
     text_fb2 += '<title-info>'
 
     # Имя тома
@@ -153,12 +151,15 @@ if __name__ == '__main__':
     # Язык тома
     text_fb2 += '<lang>{}</lang>'.format('ru')
 
+    # Исходный язык
+    text_fb2 += '<src-lang>{}</src-lang>'.format('jp')
+
     # Обложка тома
     text_fb2 += '<coverpage><image l:href="#cover.png"/></coverpage>'
 
     text_fb2 += '</title-info>'
 
-
+    # document-info
     # Информация о создателе документа fb2
     text_fb2 += '<document-info>'
 
@@ -176,10 +177,8 @@ if __name__ == '__main__':
     # Перечисление программ, которые использовались при подготовке документа.
     # text_fb2 += '<program-used>{}</program-used>'.format('')
 
-    # TODO: добавить
     # Версия документа
-    # text_fb2 += '<version>{}</version>'.format('1.0')
-
+    text_fb2 += '<version>{}</version>'.format('1.0')
 
     text_fb2 += '</document-info>'
 
