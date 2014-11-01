@@ -38,11 +38,11 @@ from os.path import join
 import generate_info_ranobe
 
 
-def volume_references(grab_volume):
+def volume_references(grab_doc):
     """Функция возвращает словарь, ключем будет id примечания,
     а значением -- примечание главы."""
 
-    content = grab_volume.doc.select('//ol[@class="references"]/li')
+    content = grab_doc.select('//ol[@class="references"]/li')
     references = dict()
     for ref in content:
         ref_id = ref.attr('id')  # cite_note-*
@@ -58,13 +58,45 @@ def volume_references(grab_volume):
 # print(content_text.html())
 
 
+def volume_images(grab_doc):
+    """Функция возвращает список картинок в главе."""
+
+    content = grab_doc.select('//a[@class="image fancybox"]')
+    images = list()
+    for im in content:
+        href = im.attr('data-fancybox-href')
+        images.append(href)
+
+    return images
+
+
 if __name__ == '__main__':
-    url = 'http://ruranobe.ru/r/mknr/v1/ch2'
+    url = 'http://ruranobe.ru/r/mknr/v1/ch4'
     g = prepare_and_create_grab(url)
 
-    # Словарь с примечаниями
-    references = volume_references(g)
+
+    # Список картинок в главе
+    images = volume_images(g.doc)
+
+    if images:
+        print('Картинки:')
+
+        # Перебор списка картинок главы
+        for i, im in enumerate(images, 1):
+            print('{}. {}'.format(i, im))
+    else:
+        print('Картинок в главе нет.')
+
+
+    print()
+
+
+    # Словарь с примечаниями, которые находятся в конце главы
+    references = volume_references(g.doc)
+
     if references:
+        print('Примечания:')
+
         # Поиск примечаний в тексте главы:
         reference_content = g.doc.select('//*[@class="reference"]/a/@href')
         for i, ref in enumerate(reference_content, 1):
