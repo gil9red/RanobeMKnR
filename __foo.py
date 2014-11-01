@@ -13,9 +13,10 @@ def volume_references(grab_volume):
     content = grab_volume.doc.select('//ol[@class="references"]/li')
     references = list()
     for ref in content:
+        ref_id = ref.attr('id')
         ref_link = ref.select('span[@class="mw-cite-backlink"]/a').attr('href').strip()
         ref_text = ref.select('span[@class="reference-text"]').text().strip()
-        references.append((ref_link, ref_text))
+        references.append((ref_link, ref_id, ref_text))
 
     return references
 
@@ -47,10 +48,13 @@ if __name__ == '__main__':
 
 
     for i, ref in enumerate(volume_references(g), 1):
-        print("{}. {} {}".format(i, ref[0], ref[1]))
+        print("{}. {} {} {}".format(i, ref[0], ref[1], ref[2]))
 
     print()
 
-    content = g.doc.select('//*[@class="reference"]/a/@href')
-    for i, href in enumerate(content, 1):
-        print('{}. {}'.format(i, href.text()))
+    # Поиск примечаний в тексте главы:
+    content = g.doc.select('//*[@class="reference"]')
+    for i, ref in enumerate(content, 1):
+        href = ref.select("a/@href").text()
+        print('{}. {} {}'.format(i, ref.attr('id'), href))
+        # print('{}. {}'.format(i, href.text()))
