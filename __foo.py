@@ -1,32 +1,22 @@
 __author__ = 'ipetrash'
 
 
-from grab import Grab
-from os.path import exists
-from os.path import join
-import generate_info_ranobe
+import os
 
+def prepare_and_create_grab(url):
+    def get_cache_name(url):
+        l = url.lstrip('http://').split('/')
+        return l[-2] + '_' + l[-1]
 
-def volume_references(grab_volume):
-    """Функция возвращает список примечаний главы."""
-
-    content = grab_volume.doc.select('//ol[@class="references"]/li')
-    references = list()
-    for ref in content:
-        ref_id = ref.attr('id')
-        ref_link = ref.select('span[@class="mw-cite-backlink"]/a').attr('href').strip()
-        ref_text = ref.select('span[@class="reference-text"]').text().strip()
-        references.append((ref_link, ref_id, ref_text))
-
-    return references
-
-
-if __name__ == '__main__':
     data = None
 
-    file_path = join(generate_info_ranobe.DIR_RANOBE, 'ch1.html')
+    file_name = get_cache_name(url) + '.html'
+    file_path = join(generate_info_ranobe.DIR_RANOBE, 'cache', file_name)
+
+    if not exists(os.path.dirname(file_path)):
+        os.makedirs(os.path.dirname(file_path))
+
     if not exists(file_path):
-        url = 'http://ruranobe.ru/r/mknr/v1/ch1'
         g = Grab()
         g.go(url)
         with open(file_path, mode='w', encoding='utf8') as f:
@@ -39,22 +29,47 @@ if __name__ == '__main__':
         with open(file_path, encoding='utf8') as f:
             data = f.read()
 
-
-    g = Grab(data)
-
-    # Получение основного контекста, имеющий номер главы и
-    # content_text = g.doc.select('//div[@id="mw-content-text"]')
-    # print(content_text.html())
+    return Grab(data)
 
 
-    for i, ref in enumerate(volume_references(g), 1):
-        print("{}. {} {} {}".format(i, ref[0], ref[1], ref[2]))
+from grab import Grab
+from os.path import exists
+from os.path import join
+import generate_info_ranobe
 
-    print()
 
-    # Поиск примечаний в тексте главы:
-    content = g.doc.select('//*[@class="reference"]')
-    for i, ref in enumerate(content, 1):
-        href = ref.select("a/@href").text()
-        print('{}. {} {}'.format(i, ref.attr('id'), href))
-        # print('{}. {}'.format(i, href.text()))
+def volume_references(grab_volume):
+    """Функция возвращает словарь, ключем будет id примечания,
+    а значением -- примечание главы."""
+
+    content = grab_volume.doc.select('//ol[@class="references"]/li')
+    references = dict()
+    for ref in content:
+        ref_id = ref.attr('id')  # cite_note-*
+        # ref_link = ref.select('span[@class="mw-cite-backlink"]/a').attr('href').strip()  # cite_ref-1
+        ref_text = ref.select('span[@class="reference-text"]').text().strip()
+        references[ref_id] = ref_text
+
+    return references
+
+
+# Получение основного контекста, имеющий номер главы и
+# content_text = g.doc.select('//div[@id="mw-content-text"]')
+# print(content_text.html())
+
+
+if __name__ == '__main__':
+    url = 'http://ruranobe.ru/r/mknr/v1/ch2'
+    g = prepare_and_create_grab(url)
+
+    # Словарь с примечаниями
+    references = volume_references(g)
+    if references:
+        # Поиск примечаний в тексте главы:
+        reference_content = g.doc.select('//*[@class="reference"]/a/@href')
+        for i, ref in enumerate(reference_content, 1):
+            ref_id = ref.text().lstrip('#')
+            ref_text = references[ref_id]
+            print('{}. {}: {}'.format(i, ref_id, ref_text))
+    else:
+        print('Примечаний нет.')
