@@ -1,7 +1,7 @@
 __author__ = 'ipetrash'
 
-
 import os
+
 
 def prepare_and_create_grab(url):
     def get_cache_name(url):
@@ -53,11 +53,6 @@ def volume_references(grab_doc):
     return references
 
 
-# Получение основного контекста, имеющий номер главы и
-# content_text = g.doc.select('//div[@id="mw-content-text"]')
-# print(content_text.html())
-
-
 def volume_images(grab_doc):
     """Функция возвращает список картинок в главе."""
 
@@ -71,7 +66,7 @@ def volume_images(grab_doc):
 
 
 if __name__ == '__main__':
-    url = 'http://ruranobe.ru/r/mknr/v1/ch4'
+    url = 'http://ruranobe.ru/r/mknr/v1/ch0'
     g = prepare_and_create_grab(url)
 
 
@@ -79,14 +74,12 @@ if __name__ == '__main__':
     images = volume_images(g.doc)
 
     if images:
-        print('Картинки:')
-
         # Перебор списка картинок главы
+        print('Картинки:')
         for i, im in enumerate(images, 1):
             print('{}. {}'.format(i, im))
     else:
         print('Картинок в главе нет.')
-
 
     print()
 
@@ -95,9 +88,8 @@ if __name__ == '__main__':
     references = volume_references(g.doc)
 
     if references:
-        print('Примечания:')
-
         # Поиск примечаний в тексте главы:
+        print('Примечания:')
         reference_content = g.doc.select('//*[@class="reference"]/a/@href')
         for i, ref in enumerate(reference_content, 1):
             ref_id = ref.text().lstrip('#')
