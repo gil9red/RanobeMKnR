@@ -1,13 +1,43 @@
 __author__ = 'ipetrash'
 
+
 from grab import Grab
+from os.path import exists
+from os.path import join
+import generate_info_ranobe
+
+
+def volume_references(grab_volume):
+    """Функция возвращает список примечаний главы."""
+
+    content = grab_volume.doc.select('//ol[@class="references"]/li')
+    references = list()
+    for ref in content:
+        ref_link = ref.select('span[@class="mw-cite-backlink"]/a').attr('href').strip()
+        ref_text = ref.select('span[@class="reference-text"]').text().strip()
+        references.append((ref_link, ref_text))
+
+    return references
+
 
 if __name__ == '__main__':
-    # url = 'http://ruranobe.ru/r/mknr/v1/ch1'
-
     data = None
-    with open('_ranobe_\ch1.html', encoding='utf8') as f:
-        data = f.read()
+
+    file_path = join(generate_info_ranobe.DIR_RANOBE, 'ch1.html')
+    if not exists(file_path):
+        url = 'http://ruranobe.ru/r/mknr/v1/ch1'
+        g = Grab()
+        g.go(url)
+        with open(file_path, mode='w', encoding='utf8') as f:
+            text = g.response.body
+            f.write(text)
+            if not data:
+                data = text
+
+    if not data:
+        with open(file_path, encoding='utf8') as f:
+            data = f.read()
+
 
     g = Grab(data)
 
@@ -15,5 +45,12 @@ if __name__ == '__main__':
     # content_text = g.doc.select('//div[@id="mw-content-text"]')
     # print(content_text.html())
 
-    print(g.doc.select('//ol[@class="references"]').count())
-    print(g.doc.select('//ol[@class="references"]/li').count())
+
+    for i, ref in enumerate(volume_references(g), 1):
+        print("{}. {} {}".format(i, ref[0], ref[1]))
+
+    print()
+
+    content = g.doc.select('//*[@class="reference"]/a/@href')
+    for i, href in enumerate(content, 1):
+        print('{}. {}'.format(i, href.text()))
