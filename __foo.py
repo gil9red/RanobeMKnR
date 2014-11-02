@@ -36,9 +36,9 @@ if __name__ == '__main__':
     g = prepare_and_create_grab(url)
 
 
-    # ◊ ◊ ◊ -- разделители частей главы
-    for c in g.doc.select('//*[@class="subtitle"]'):
-        print(c.text())
+    # # ◊ ◊ ◊ -- разделители частей главы
+    # for c in g.doc.select('//*[@class="subtitle"]'):
+    #     print(c.text())
 
 
     content = g.doc.select('//div[@id="mw-content-text"]/p')
@@ -49,30 +49,30 @@ if __name__ == '__main__':
 
 
 
-    # Список картинок в главе
-    images = volume_images(g.doc)
-
-    if images:
-        # Перебор списка картинок главы
-        print('Картинки:')
-        for i, im in enumerate(images, 1):
-            print('{}. {}'.format(i, im))
-    else:
-        print('Картинок в главе нет.')
-
-    print()
-
-
-    # Словарь с примечаниями, которые находятся в конце главы
-    references = volume_references(g.doc)
-
-    if references:
-        # Поиск примечаний в тексте главы:
-        print('Примечания:')
-        reference_content = g.doc.select('//*[@class="reference"]/a/@href')
-        for i, ref in enumerate(reference_content, 1):
-            ref_id = ref.text().lstrip('#')
-            ref_text = references[ref_id]
-            print('{}. {}: {}'.format(i, ref_id, ref_text))
-    else:
-        print('Примечаний нет.')
+    # # Список картинок в главе
+    # images = volume_images(g.doc)
+    #
+    # if images:
+    #     # Перебор списка картинок главы
+    #     print('Картинки:')
+    #     for i, im in enumerate(images, 1):
+    #         print('{}. {}'.format(i, im))
+    # else:
+    #     print('Картинок в главе нет.')
+    #
+    # print()
+    #
+    #
+    # # Словарь с примечаниями, которые находятся в конце главы
+    # references = volume_references(g.doc)
+    #
+    # if references:
+    #     # Поиск примечаний в тексте главы:
+    #     print('Примечания:')
+    #     reference_content = g.doc.select('//*[@class="reference"]/a/@href')
+    #     for i, ref in enumerate(reference_content, 1):
+    #         ref_id = ref.text().lstrip('#')
+    #         ref_text = references[ref_id]
+    #         print('{}. {}: {}'.format(i, ref_id, ref_text))
+    # else:
+    #     print('Примечаний нет.')
