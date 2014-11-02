@@ -3,6 +3,42 @@ __author__ = 'ipetrash'
 """Скрипт, используя данные скриптов get_ranobe_info и download_ranobe,
 генерирует файл в формате fb2."""
 
+
+def prepare_and_create_grab(url):
+    import os
+    from os.path import exists
+    from os.path import join
+
+    def get_cache_name(url):
+        l = url.lstrip('http://').split('/')
+        return l[-2], l[-1]
+
+    data = None
+
+    cache_name = get_cache_name(url)
+    dir_name = cache_name[0]
+    file_name = cache_name[1] + '.html'
+    file_path = join(generate_info_ranobe.DIR_RANOBE, 'cache', dir_name, file_name)
+
+    if not exists(os.path.dirname(file_path)):
+        os.makedirs(os.path.dirname(file_path))
+
+    if not exists(file_path):
+        g = Grab()
+        g.go(url)
+        with open(file_path, mode='w', encoding='utf8') as f:
+            text = g.response.body
+            f.write(text)
+            if not data:
+                data = text
+
+    if not data:
+        with open(file_path, encoding='utf8') as f:
+            data = f.read()
+
+    return Grab(data)
+
+
 import os.path
 # import sys
 import json
@@ -57,19 +93,18 @@ def add_chapter_to_fb2(url_chapter):
         for sub_ch in url:
             section += add_chapter_to_fb2(sub_ch)
     else:
-        g = Grab()
-        g.go(url)
+        g = prepare_and_create_grab(url)
+        # g = Grab()
+        # g.go(url)
 
-        # # Получение основного контекста, имеющий номер главы и
-        # content_text = g.doc.select('//div[@id="mw-content-text"]')
+        # Получение параграфов главы и добавление их в документ fb2
+        content = g.doc.select('//div[@id="mw-content-text"]/p')
+        for p in content:
+            section += '<p>{}</p>'.format(p.text())
 
-        # # Получение и объединение параграфов в единый текст
-        # content = ''.join('<p>{}</p>'.format(r.text()) for r in content_text.select('p'))
-
-        # TODO: удалить
-        content = '<p>{}</p>'.format(g.response.url)
-
-        section += content
+        # # TODO: удалить
+        # content = '<p>{}</p>'.format(g.response.url)
+        # section += content
 
     section += '</section>'
     return section
@@ -94,7 +129,7 @@ if __name__ == '__main__':
 
 
     # Первый том
-    volume_info = ranobe_info['volumes'][4]
+    volume_info = ranobe_info['volumes'][0]
 
     # TODO: имя файла с томом ранобе нужно такое же как и название тома
     # Название файла тома ранобе
