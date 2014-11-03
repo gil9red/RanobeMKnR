@@ -40,13 +40,23 @@ if __name__ == '__main__':
     # for c in g.doc.select('//*[@class="subtitle"]'):
     #     print(c.text())
 
+    content = g.doc.select('//div[@id="mw-content-text"]/*')
+    for p in content:
+        tag = p.node.tag
+        if tag == 'p':
+            # pass
+            # print(p.html())
+            print(p.text())
 
-    content = g.doc.select('//div[@id="mw-content-text"]/p')
-    for i, p in enumerate(content, 1):
-        print('{}. "{}"'.format(i, p.html()))
-        print('"{}"'.format(p.text()))
-        print()
+        elif tag == 'div':
+            print(p.html())
 
+        elif tag == 'center' and p.attr('class') == 'subtitle':
+            print(p.text())
+
+        # print(p.node.tag)
+        # print('"{}"'.format(p.html()))
+        # print('"{}"'.format(p.text()))
 
 
     # # Список картинок в главе
