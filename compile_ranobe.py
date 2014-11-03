@@ -44,15 +44,14 @@ import json
 
 import generate_info_ranobe
 
-from xml.dom.minidom import parseString
+# from xml.dom.minidom import parseString
 
-
-def pretty_xml(xml, ind=' ' * 2):
-    """Функция принимает строку xml и выводит xml с отступами."""
-
-    return parseString(xml).toprettyxml(indent=ind)
-
-
+# def pretty_xml(xml, ind=' ' * 2):
+#     """Функция принимает строку xml и выводит xml с отступами."""
+#
+#     return parseString(xml).toprettyxml(indent=ind)
+#
+#
 # from lxml import etree
 #
 # def pretty_xml(xml_str):
@@ -300,6 +299,9 @@ if __name__ == '__main__':
 
     # Открытие и перезапись файла ранобе
     with open(path_volume_fb2, mode='w', encoding='utf8') as f:
-        xml = '<?xml version="1.0" encoding="UTF-8"?>' + '\n'
-        xml += text_fb2
-        f.write(pretty_xml(xml))
+        # xml = '<?xml version="1.0" encoding="UTF-8"?>' + '\n'
+        # xml += text_fb2
+
+        from xml.dom.minidom import parseString
+        xml = parseString(text_fb2).toprettyxml(indent=' ')
+        f.write(xml)
