@@ -22,11 +22,10 @@ def volume_references(grab_doc):
 def volume_images(grab_doc):
     """Функция возвращает список картинок в главе."""
 
-    content = grab_doc.select('//a[@class="image fancybox"]')
+    content = grab_doc.select('//a[@class="image fancybox"]/@data-fancybox-href')
     images = list()
-    for im in content:
-        href = im.attr('data-fancybox-href')
-        images.append(href)
+    for im_href in content:
+        images.append(im_href.text())
 
     return images
 
@@ -44,19 +43,17 @@ if __name__ == '__main__':
     for p in content:
         tag = p.node.tag
         if tag == 'p':
-            # pass
+            pass
             # print(p.html())
             print(p.text())
 
         elif tag == 'div':
-            print(p.html())
+            image_href = p.select('./*/a[@class="image fancybox"]/@data-fancybox-href')
+            if image_href.count():
+                print(image_href.text())
 
         elif tag == 'center' and p.attr('class') == 'subtitle':
             print(p.text())
-
-        # print(p.node.tag)
-        # print('"{}"'.format(p.html()))
-        # print('"{}"'.format(p.text()))
 
 
     # # Список картинок в главе
