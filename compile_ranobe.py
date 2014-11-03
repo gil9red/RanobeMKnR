@@ -40,7 +40,6 @@ def prepare_and_create_grab(url):
 
 
 import os.path
-# import sys
 import json
 
 import generate_info_ranobe
@@ -94,22 +93,41 @@ def add_chapter_to_fb2(url_chapter):
             section += add_chapter_to_fb2(sub_ch)
     else:
         g = prepare_and_create_grab(url)
-        # g = Grab()
-        # g.go(url)
 
+        # TODO: доделать
         # Получение параграфов главы и добавление их в документ fb2
-        content = g.doc.select('//div[@id="mw-content-text"]/p')
-        for p in content:
-            section += '<p>{}</p>'.format(p.text())
+        # content = g.doc.select('//div[@id="mw-content-text"]/p')
+        # for p in content:
+        #     section += '<p>{}</p>'.format(p.text())
 
-        # # TODO: удалить
-        # content = '<p>{}</p>'.format(g.response.url)
-        # section += content
+
+
+        content = g.doc.select('//div[@id="mw-content-text"]/*')
+        for p in content:
+            tag = p.node.tag
+            if tag == 'p':
+                # TODO: примечания
+                section += '<p>{}</p>'.format(p.text())
+
+            elif tag == 'div':
+                image_href = p.select('./*/a[@class="image fancybox"]/@data-fancybox-href')
+                if image_href.count():
+                    # TODO: добавление картинок
+                    section += '<p>{}</p>'.format(image_href.text())
+
+            elif tag == 'center' and p.attr('class') == 'subtitle':
+                section += '<subtitle>* * *</subtitle>'
+
+                # Разделителем из оригинального текста является: ◊ ◊ ◊,
+                # но, по-моему, три звездочки "* * *" лучше.
+                # section += '<subtitle>{}</subtitle>'.format(p.text())
+
+
 
     section += '</section>'
     return section
 
-
+# TODO: remove this
 # http://www.fictionbook.org/index.php/Описание_формата_FB2_от_Sclex
 # http://www.fictionbook.org/index.php/Элементы_стандарта_FictionBook
 
@@ -247,18 +265,22 @@ if __name__ == '__main__':
     # Словарь страниц тома, которые не относятся к главам: послесловие, пролог, и т.д.
     other_pages = volume_info.get("pages").get("other")
 
-    text_fb2 += add_chapter_to_fb2(other_pages.get('i'))
-    text_fb2 += add_chapter_to_fb2(other_pages.get('p1'))
-    text_fb2 += add_chapter_to_fb2(other_pages.get('p2'))
+    # TODO: временно!
+    text_fb2 += add_chapter_to_fb2(chapters[1])
 
-    # Перебор список глав:
-    for url_ch in chapters:
-        text_fb2 += add_chapter_to_fb2(url_ch)
 
-    text_fb2 += add_chapter_to_fb2(other_pages.get('e'))
-    text_fb2 += add_chapter_to_fb2(other_pages.get('ss'))
-    text_fb2 += add_chapter_to_fb2(other_pages.get('a'))
-    text_fb2 += add_chapter_to_fb2(other_pages.get('a2'))
+    # text_fb2 += add_chapter_to_fb2(other_pages.get('i'))
+    # text_fb2 += add_chapter_to_fb2(other_pages.get('p1'))
+    # text_fb2 += add_chapter_to_fb2(other_pages.get('p2'))
+
+    # # Перебор список глав:
+    # for url_ch in chapters:
+    #     text_fb2 += add_chapter_to_fb2(url_ch)
+
+    # text_fb2 += add_chapter_to_fb2(other_pages.get('e'))
+    # text_fb2 += add_chapter_to_fb2(other_pages.get('ss'))
+    # text_fb2 += add_chapter_to_fb2(other_pages.get('a'))
+    # text_fb2 += add_chapter_to_fb2(other_pages.get('a2'))
 
     text_fb2 += '</body>'
 
