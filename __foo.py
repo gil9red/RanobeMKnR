@@ -39,8 +39,8 @@ if __name__ == '__main__':
     # print(os.path.splitext(im))
 
 
-    # url = 'http://ruranobe.ru/r/mknr/v1/ch1'
-    # g = prepare_and_create_grab(url)
+    url = 'http://ruranobe.ru/r/mknr/v1/ch1'
+    g = prepare_and_create_grab(url)
 
 
     # # ◊ ◊ ◊ -- разделители частей главы
@@ -92,3 +92,13 @@ if __name__ == '__main__':
     #         print('{}. {}: {}'.format(i, ref_id, ref_text))
     # else:
     #     print('Примечаний нет.')
+
+
+    content = g.doc.select('//div[@id="mw-content-text"]/*')
+    for p in content:
+        tag = p.node.tag
+        if tag == 'p':
+            ref = p.select('*[@class="reference"]/a/@href')
+            if ref.count():
+                ref_id = ref.text().lstrip('#')
+                print(ref_id)
