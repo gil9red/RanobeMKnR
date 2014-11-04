@@ -63,7 +63,7 @@ def add_chapter_to_fb2(url_chapter):
     """Скачивает главу по ссылке, формирует секцию section fb2 и заполняет ее"""
 
     if not url_chapter:
-        return ''
+        return '', ''
 
     name, url = url_chapter
 
@@ -82,8 +82,11 @@ def add_chapter_to_fb2(url_chapter):
         content = g.doc.select('//div[@id="mw-content-text"]/*')
         for p in content:
             tag = p.node.tag
+            # TODO: найден заголовок: <h2><span class="mw-headline"
             if tag == 'p':
                 # TODO: примечания
+                # Пример примечания: <a l:href="#note1" type="note">[1]</a>
+                # TODO: теги <b> и прочие менять на их аналоги
                 section += '<p>{}</p>'.format(p.text())
 
             elif tag == 'div':
@@ -257,24 +260,61 @@ if __name__ == '__main__':
     # Словарь страниц тома, которые не относятся к главам: послесловие, пролог, и т.д.
     other_pages = volume_info.get("pages").get("other")
 
+
     # TODO: временно!
     body_section, binary_section = add_chapter_to_fb2(chapters[1])
     body += body_section
     binaries += binary_section
 
 
-    # body += add_chapter_to_fb2(other_pages.get('i'))
-    # body += add_chapter_to_fb2(other_pages.get('p1'))
-    # body += add_chapter_to_fb2(other_pages.get('p2'))
-
+    # body_section, binary_section = add_chapter_to_fb2(other_pages.get('i'))
+    # body += body_section
+    # binaries += binary_section
+    #
+    # body_section, binary_section = add_chapter_to_fb2(other_pages.get('p1'))
+    # body += body_section
+    # binaries += binary_section
+    #
+    # body_section, binary_section = add_chapter_to_fb2(other_pages.get('p2'))
+    # body += body_section
+    # binaries += binary_section
+    #
     # # Перебор список глав:
     # for url_ch in chapters:
-    #     body += add_chapter_to_fb2(url_ch)
+    #     body_section, binary_section = add_chapter_to_fb2(url_ch)
+    #     body += body_section
+    #     binaries += binary_section
+    #
+    # body_section, binary_section = add_chapter_to_fb2(other_pages.get('e'))
+    # body += body_section
+    # binaries += binary_section
+    #
+    # body_section, binary_section = add_chapter_to_fb2(other_pages.get('ss'))
+    # body += body_section
+    # binaries += binary_section
+    #
+    # body_section, binary_section = add_chapter_to_fb2(other_pages.get('a'))
+    # body += body_section
+    # binaries += binary_section
+    #
+    # body_section, binary_section = add_chapter_to_fb2(other_pages.get('a2'))
+    # body += body_section
+    # binaries += binary_section
+    #
+    #
+    # # body += add_chapter_to_fb2(other_pages.get('i'))
+    # # body += add_chapter_to_fb2(other_pages.get('p1'))
+    # # body += add_chapter_to_fb2(other_pages.get('p2'))
+    # #
+    # # # Перебор список глав:
+    # # for url_ch in chapters:
+    # #     body += add_chapter_to_fb2(url_ch)
+    # #
+    # # body += add_chapter_to_fb2(other_pages.get('e'))
+    # # body += add_chapter_to_fb2(other_pages.get('ss'))
+    # # body += add_chapter_to_fb2(other_pages.get('a'))
+    # # body += add_chapter_to_fb2(other_pages.get('a2'))
 
-    # body += add_chapter_to_fb2(other_pages.get('e'))
-    # body += add_chapter_to_fb2(other_pages.get('ss'))
-    # body += add_chapter_to_fb2(other_pages.get('a'))
-    # body += add_chapter_to_fb2(other_pages.get('a2'))
 
     body += '</body>'
 
