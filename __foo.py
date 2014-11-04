@@ -98,7 +98,7 @@ if __name__ == '__main__':
     for p in content:
         tag = p.node.tag
         if tag == 'p':
-            ref = p.select('*[@class="reference"]/a/@href')
+            ref = p.select('*[@class="reference"]/a')
             if ref.count():
-                ref_id = ref.text().lstrip('#')
-                print(ref_id)
+                ref_id = ref.attr('href').lstrip('#')
+                print('{}: {}'.format(ref.text(), ref_id))
