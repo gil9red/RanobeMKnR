@@ -31,29 +31,38 @@ def volume_images(grab_doc):
 
 
 if __name__ == '__main__':
-    url = 'http://ruranobe.ru/r/mknr/v1/ch1'
-    g = prepare_and_create_grab(url)
+    pass
+
+    # im = 'http://ruranobe.ru/w/images/f/f2/MKnR_v01_11.png'
+    # import os.path
+    # print(os.path.split(im))
+    # print(os.path.splitext(im))
+
+
+    # url = 'http://ruranobe.ru/r/mknr/v1/ch1'
+    # g = prepare_and_create_grab(url)
 
 
     # # ◊ ◊ ◊ -- разделители частей главы
     # for c in g.doc.select('//*[@class="subtitle"]'):
     #     print(c.text())
 
-    content = g.doc.select('//div[@id="mw-content-text"]/*')
-    for p in content:
-        tag = p.node.tag
-        if tag == 'p':
-            pass
-            # print(p.html())
-            print(p.text())
 
-        elif tag == 'div':
-            image_href = p.select('./*/a[@class="image fancybox"]/@data-fancybox-href')
-            if image_href.count():
-                print(image_href.text())
-
-        elif tag == 'center' and p.attr('class') == 'subtitle':
-            print(p.text())
+    # content = g.doc.select('//div[@id="mw-content-text"]/*')
+    # for p in content:
+    #     tag = p.node.tag
+    #     if tag == 'p':
+    #         pass
+    #         # print(p.html())
+    #         print(p.text())
+    #
+    #     elif tag == 'div':
+    #         image_href = p.select('./*/a[@class="image fancybox"]/@data-fancybox-href')
+    #         if image_href.count():
+    #             print(image_href.text())
+    #
+    #     elif tag == 'center' and p.attr('class') == 'subtitle':
+    #         print(p.text())
 
 
     # # Список картинок в главе
