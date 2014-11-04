@@ -44,22 +44,6 @@ import json
 
 import generate_info_ranobe
 
-# from xml.dom.minidom import parseString
-
-# def pretty_xml(xml, ind=' ' * 2):
-#     """Функция принимает строку xml и выводит xml с отступами."""
-#
-#     return parseString(xml).toprettyxml(indent=ind)
-#
-#
-# from lxml import etree
-#
-# def pretty_xml(xml_str):
-# """Функция принимает строку xml и выводит xml с отступами."""
-#
-# root = etree.fromstring(xml_str)
-# return etree.tostring(root, pretty_print=True)
-
 
 from urllib.request import urlopen
 import base64
@@ -93,13 +77,7 @@ def add_chapter_to_fb2(url_chapter):
     else:
         g = prepare_and_create_grab(url)
 
-        # TODO: доделать
-        # Получение параграфов главы и добавление их в документ fb2
-        # content = g.doc.select('//div[@id="mw-content-text"]/p')
-        # for p in content:
-        #     section += '<p>{}</p>'.format(p.text())
-
-
+        binaries = ''
 
         content = g.doc.select('//div[@id="mw-content-text"]/*')
         for p in content:
@@ -111,24 +89,35 @@ def add_chapter_to_fb2(url_chapter):
             elif tag == 'div':
                 image_href = p.select('./*/a[@class="image fancybox"]/@data-fancybox-href')
                 if image_href.count():
-                    # TODO: добавление картинок
-                    section += '<p>{}</p>'.format(image_href.text())
+                    href = image_href.text()
+
+                    # Определение суффикса/типа файла изображения
+                    # http://ruranobe.ru/w/images/3/3b/MKnR_v01_a.png -> png
+                    id_im = os.path.split(href)[1]
+                    # TODO: проверять формат изображения (как я помню, может быть png или jpg)
+                    suffix = os.path.splitext(href)[1][1:]
+                    binaries += '<binary id="{}" content-type="image/{}">'.format(id_im, suffix)
+                    binaries += get_base64_url_image(href)
+                    binaries += '</binary>'
+
+                    section += '<image l:href="#{}"/>'.format(id_im)
 
             elif tag == 'center' and p.attr('class') == 'subtitle':
-                section += '<subtitle>* * *</subtitle>'
-
                 # Разделителем из оригинального текста является: ◊ ◊ ◊,
                 # но, по-моему, три звездочки "* * *" лучше.
                 # section += '<subtitle>{}</subtitle>'.format(p.text())
 
+                section += '<subtitle>* * *</subtitle>'
+
 
 
     section += '</section>'
-    return section
+    return section, binaries
 
-# TODO: remove this
+
 # http://www.fictionbook.org/index.php/Описание_формата_FB2_от_Sclex
 # http://www.fictionbook.org/index.php/Элементы_стандарта_FictionBook
+
 
 if __name__ == '__main__':
     # Путь к папке с генерированной информацией
@@ -145,6 +134,12 @@ if __name__ == '__main__':
         ranobe_info = json.load(f)
 
 
+    text_fb2 = ('<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0" '
+                'xmlns:l="http://www.w3.org/1999/xlink">')
+
+    binaries = ''
+
+
     # Первый том
     volume_info = ranobe_info['volumes'][0]
 
@@ -156,96 +151,94 @@ if __name__ == '__main__':
     # Путь к файлу ранобе
     path_volume_fb2 = os.path.join(ranobe_dir, name_volume_fb2)
 
-    text_fb2 = ('<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0" '
-                'xmlns:l="http://www.w3.org/1999/xlink">')
 
-    text_fb2 += '<description>'
+    description = '<description>'
 
     # TODO: добавить информацию о переводчиках
 
     # title-info
-    text_fb2 += '<title-info>'
+    description += '<title-info>'
 
     # Имя тома
     name_volume = volume_info['name']
 
     # Добавление имени тома
-    text_fb2 += '<book-title>' + name_volume + '</book-title>'
+    description += '<book-title>' + name_volume + '</book-title>'
 
     # Добавление автора
-    text_fb2 += '<author>'
+    description += '<author>'
     first_name, last_name = tuple(volume_info['author'].split(' '))
-    text_fb2 += '<first-name>' + first_name + '</first-name>'
-    text_fb2 += '<last-name>' + last_name + '</last-name>'
-    text_fb2 += '</author>'
+    description += '<first-name>' + first_name + '</first-name>'
+    description += '<last-name>' + last_name + '</last-name>'
+    description += '</author>'
 
     # Добавление иллюстратора
-    text_fb2 += '<author>'
+    description += '<author>'
     first_name, last_name = tuple(volume_info['illustrator'].split(' '))
-    text_fb2 += '<first-name>' + first_name + '</first-name>'
-    text_fb2 += '<last-name>' + last_name + '</last-name>'
-    text_fb2 += '</author>'
+    description += '<first-name>' + first_name + '</first-name>'
+    description += '<last-name>' + last_name + '</last-name>'
+    description += '</author>'
 
     # Добавление аннотации
-    text_fb2 += '<annotation>'
+    description += '<annotation>'
     annotation = ''
     for line in ranobe_info['annotation'].split('\n'):
         annotation += '<p>{}</p>'.format(line)
-    text_fb2 += annotation
-    text_fb2 += '</annotation>'
+    description += annotation
+    description += '</annotation>'
 
     # Добавлени серии и номера в серии
-    text_fb2 += '<sequence name="{}" number="{}"/>'.format(volume_info['series'], volume_info['number'])
+    description += '<sequence name="{}" number="{}"/>'.format(volume_info['series'], volume_info['number'])
 
     # Добавление жанра(ов)
-    text_fb2 += '<genre>{}</genre>'.format('sf_fantasy')
+    description += '<genre>{}</genre>'.format('sf_fantasy')
 
     # Язык тома
-    text_fb2 += '<lang>{}</lang>'.format('ru')
+    description += '<lang>{}</lang>'.format('ru')
 
     # Исходный язык
-    text_fb2 += '<src-lang>{}</src-lang>'.format('jp')
+    description += '<src-lang>{}</src-lang>'.format('jp')
 
     # Обложка тома
-    text_fb2 += '<coverpage><image l:href="#cover.png"/></coverpage>'
+    description += '<coverpage><image l:href="#cover.png"/></coverpage>'
 
-    text_fb2 += '</title-info>'
+    description += '</title-info>'
 
     # document-info
     # Информация о создателе документа fb2
-    text_fb2 += '<document-info>'
+    description += '<document-info>'
 
     # Автор документа, т.е. тот, кто его создал/сгенерировал/сконвертировал.
-    text_fb2 += '<author>'
-    text_fb2 += '<nickname>{}</nickname>'.format('gil9red')
-    text_fb2 += '<home-page>{}</home-page>'.format('https://github.com/gil9red')
-    text_fb2 += '</author>'
+    description += '<author>'
+    description += '<nickname>{}</nickname>'.format('gil9red')
+    description += '<home-page>{}</home-page>'.format('https://github.com/gil9red')
+    description += '</author>'
 
-    # TODO: добавить
+    # TODO: добавить ссылка на сайт переводчиков ранобе, откуда, собственно, скрипт
+    # и берет данные
     # Откуда взят оригинальный документ, доступный в online:
-    # text_fb2 += '<src-url>{}</src-url>'.format('')
+    # description += '<src-url>{}</src-url>'.format('')
 
     # TODO: добавить
     # Перечисление программ, которые использовались при подготовке документа.
-    # text_fb2 += '<program-used>{}</program-used>'.format('')
+    # description += '<program-used>{}</program-used>'.format('')
 
     # Версия документа
-    text_fb2 += '<version>{}</version>'.format('1.0')
+    description += '<version>{}</version>'.format('1.0')
 
-    text_fb2 += '</document-info>'
+    description += '</document-info>'
 
 
     # Информация о бумажном (или другом) издании, на основании которого создан FB2.x документ.
-    text_fb2 += '<publish-info>'
-    text_fb2 += '<isbn>{}</isbn>'.format(volume_info['ISBN'])
-    text_fb2 += '</publish-info>'
+    description += '<publish-info>'
+    description += '<isbn>{}</isbn>'.format(volume_info['ISBN'])
+    description += '</publish-info>'
 
-    text_fb2 += '</description>'
+    description += '</description>'
 
-    text_fb2 += '<body>'
 
-    text_fb2 += '<title><p>{}</p></title>'.format(name_volume)
-
+    body = '<body>'
+    body += '<title><p>{}</p></title>'.format(name_volume)
 
     # Порядок глав (с типами страниц) в томе:
     # i    - Начальные иллюстрации
@@ -265,43 +258,57 @@ if __name__ == '__main__':
     other_pages = volume_info.get("pages").get("other")
 
     # TODO: временно!
-    text_fb2 += add_chapter_to_fb2(chapters[1])
+    body_section, binary_section = add_chapter_to_fb2(chapters[1])
+    body += body_section
+    binaries += binary_section
 
 
-    # text_fb2 += add_chapter_to_fb2(other_pages.get('i'))
-    # text_fb2 += add_chapter_to_fb2(other_pages.get('p1'))
-    # text_fb2 += add_chapter_to_fb2(other_pages.get('p2'))
+    # body += add_chapter_to_fb2(other_pages.get('i'))
+    # body += add_chapter_to_fb2(other_pages.get('p1'))
+    # body += add_chapter_to_fb2(other_pages.get('p2'))
 
     # # Перебор список глав:
     # for url_ch in chapters:
-    #     text_fb2 += add_chapter_to_fb2(url_ch)
+    #     body += add_chapter_to_fb2(url_ch)
 
-    # text_fb2 += add_chapter_to_fb2(other_pages.get('e'))
-    # text_fb2 += add_chapter_to_fb2(other_pages.get('ss'))
-    # text_fb2 += add_chapter_to_fb2(other_pages.get('a'))
-    # text_fb2 += add_chapter_to_fb2(other_pages.get('a2'))
+    # body += add_chapter_to_fb2(other_pages.get('e'))
+    # body += add_chapter_to_fb2(other_pages.get('ss'))
+    # body += add_chapter_to_fb2(other_pages.get('a'))
+    # body += add_chapter_to_fb2(other_pages.get('a2'))
 
-    text_fb2 += '</body>'
+    body += '</body>'
 
 
     # Добавление обложки
     url_cover = volume_info['url_cover']
     # Определение суффикса/типа файла изображения
-    # # http://ruranobe.ru/w/images/3/3b/MKnR_v01_a.png -> png
-    # suffix = os.path.splitext(url_cover)[1][1:]
-    # text_fb2 += '<binary id="cover.{0}" content-type="image/{0}">'.format(suffix)
+    # http://ruranobe.ru/w/images/3/3b/MKnR_v01_a.png -> png
+    # TODO: проверять формат изображения (как я помню, может быть png или jpg)
+    suffix = os.path.splitext(url_cover)[1][1:]
+    binary = '<binary id="cover.{0}" content-type="image/{0}">'.format(suffix)
+    # binary = '<binary id="cover.png" content-type="image/png">'
+    binary += get_base64_url_image(url_cover)
+    binary += '</binary>'
 
-    text_fb2 += '<binary id="cover.png" content-type="image/png">'
-    text_fb2 += get_base64_url_image(url_cover)
-    text_fb2 += '</binary>'
+    binaries += binary
+
+
+    # Добавим description часть документа fb2
+    text_fb2 += description
+
+    # Добавление body часть документа fb2
+    text_fb2 += body
+
+    # Добавление binary часть документа fb2
+    text_fb2 += binaries
 
     text_fb2 += '</FictionBook>'
 
+
     # Открытие и перезапись файла ранобе
     with open(path_volume_fb2, mode='w', encoding='utf8') as f:
-        # xml = '<?xml version="1.0" encoding="UTF-8"?>' + '\n'
-        # xml += text_fb2
+        xml = text_fb2
 
         from xml.dom.minidom import parseString
-        xml = parseString(text_fb2).toprettyxml(indent=' ')
+        xml = parseString(xml).toprettyxml(indent=' ')
         f.write(xml)
