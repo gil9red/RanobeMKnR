@@ -101,4 +101,4 @@ if __name__ == '__main__':
             ref = p.select('*[@class="reference"]/a')
             if ref.count():
                 ref_id = ref.attr('href').lstrip('#')
-                print('{}: {}'.format(ref.text(), ref_id))
+                print('{}: {}: "{}"'.format(ref.text(), ref_id, p.html()))
