@@ -93,23 +93,29 @@ if __name__ == '__main__':
     # else:
     #     print('Примечаний нет.')
 
+    import re
+    note_ref_pattern = re.compile(r"<sup.*?</sup>")
 
     content = g.doc.select('//div[@id="mw-content-text"]/*')
     for p in content:
         tag = p.node.tag
         if tag == 'p':
-            ref = p.select('sup[@class="reference"]/a')
-            if ref.count():
-                # TODO: предусмотреть, что примечаний в одном абзаце может быть несколько.
-                ref_id = ref.attr('href').lstrip('#')
-                # TODO: скомпилять регулярку заранее, до обработки в цикле
-                # Пример:
-                # >>> pattern = re.compile("o")
-                # >>> pattern.match("dog")
-                import re
-                m = re.search(r"<sup.*?</sup>", p.html())
-                print(m.group())
-                fb2_note = '<a l:href="#{}" type="note">{}</a>'.format(ref_id, ref.text())
-                print('{} {}: fb2"{}":\n "{}" \n"{}"'.format(ref.text(), ref_id, fb2_note,
-                                                             p.html(), p.html().replace(m.group(), fb2_note)))
-                print()
+            refs = p.select('sup[@class="reference"]/a')
+
+            pos = 0
+            if refs.count():
+                p_html = p.html()
+
+                for ref in refs:
+                    ref_id = ref.attr('href').lstrip('#')
+
+                    m = note_ref_pattern.search(p_html, pos)
+                    if not m:
+                        continue
+
+                    pos = m.start()
+
+                    fb2_note = '<a l:href="#{}" type="note">{}</a>'.format(ref_id, ref.text())
+                    p_html = p_html.replace(m.group(), fb2_note)
+
+                print(p_html.replace('\n', ''))
