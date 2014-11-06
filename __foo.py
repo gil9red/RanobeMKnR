@@ -79,7 +79,7 @@ if __name__ == '__main__':
     # print()
     #
     #
-    # Словарь с примечаниями, которые находятся в конце главы
+    # # Словарь с примечаниями, которые находятся в конце главы
     # references = volume_references(g.doc)
     #
     # if references:
@@ -92,30 +92,30 @@ if __name__ == '__main__':
     #         print('{}. {}: {}'.format(i, ref_id, ref_text))
     # else:
     #     print('Примечаний нет.')
-
-    import re
-    note_ref_pattern = re.compile(r"<sup.*?</sup>")
-
-    content = g.doc.select('//div[@id="mw-content-text"]/*')
-    for p in content:
-        tag = p.node.tag
-        if tag == 'p':
-            refs = p.select('sup[@class="reference"]/a')
-
-            pos = 0
-            if refs.count():
-                p_html = p.html()
-
-                for ref in refs:
-                    ref_id = ref.attr('href').lstrip('#')
-
-                    m = note_ref_pattern.search(p_html, pos)
-                    if not m:
-                        continue
-
-                    pos = m.start()
-
-                    fb2_note = '<a l:href="#{}" type="note">{}</a>'.format(ref_id, ref.text())
-                    p_html = p_html.replace(m.group(), fb2_note)
-
-                print(p_html.replace('\n', ''))
+    #
+    # import re
+    # note_ref_pattern = re.compile(r"<sup.*?</sup>")
+    #
+    # content = g.doc.select('//div[@id="mw-content-text"]/*')
+    # for p in content:
+    #     tag = p.node.tag
+    #     if tag == 'p':
+    #         refs = p.select('sup[@class="reference"]/a')
+    #
+    #         pos = 0
+    #         if refs.count():
+    #             p_html = p.html()
+    #
+    #             for ref in refs:
+    #                 ref_id = ref.attr('href').lstrip('#')
+    #
+    #                 m = note_ref_pattern.search(p_html, pos)
+    #                 if not m:
+    #                     continue
+    #
+    #                 pos = m.start()
+    #
+    #                 fb2_note = '<a l:href="#{}" type="note">{}</a>'.format(ref_id, ref.text())
+    #                 p_html = p_html.replace(m.group(), fb2_note)
+    #
+    #             print(p_html.replace('\n', ''))
