@@ -79,13 +79,13 @@ if __name__ == '__main__':
     # print()
     #
     #
-    # # Словарь с примечаниями, которые находятся в конце главы
+    # Словарь с примечаниями, которые находятся в конце главы
     # references = volume_references(g.doc)
     #
     # if references:
     #     # Поиск примечаний в тексте главы:
     #     print('Примечания:')
-    #     reference_content = g.doc.select('//*[@class="reference"]/a/@href')
+    #     reference_content = g.doc.select('//sup[@class="reference"]/a/@href')
     #     for i, ref in enumerate(reference_content, 1):
     #         ref_id = ref.text().lstrip('#')
     #         ref_text = references[ref_id]
@@ -98,7 +98,18 @@ if __name__ == '__main__':
     for p in content:
         tag = p.node.tag
         if tag == 'p':
-            ref = p.select('*[@class="reference"]/a')
+            ref = p.select('sup[@class="reference"]/a')
             if ref.count():
+                # TODO: предусмотреть, что примечаний в одном абзаце может быть несколько.
                 ref_id = ref.attr('href').lstrip('#')
-                print('{}: {}: "{}"'.format(ref.text(), ref_id, p.html()))
+                # TODO: скомпилять регулярку заранее, до обработки в цикле
+                # Пример:
+                # >>> pattern = re.compile("o")
+                # >>> pattern.match("dog")
+                import re
+                m = re.search(r"<sup.*?</sup>", p.html())
+                print(m.group())
+                fb2_note = '<a l:href="#{}" type="note">{}</a>'.format(ref_id, ref.text())
+                print('{} {}: fb2"{}":\n "{}" \n"{}"'.format(ref.text(), ref_id, fb2_note,
+                                                             p.html(), p.html().replace(m.group(), fb2_note)))
+                print()
