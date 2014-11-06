@@ -4,18 +4,19 @@ __author__ = 'ipetrash'
 генерирует файл в формате fb2."""
 
 
+def split_url_by_volume_and_chapter(url):
+        l = url.lstrip('http://').split('/')
+        return l[-2], l[-1]
+
+
 def prepare_and_create_grab(url):
     import os
     from os.path import exists
     from os.path import join
 
-    def get_cache_name(url):
-        l = url.lstrip('http://').split('/')
-        return l[-2], l[-1]
-
     data = None
 
-    cache_name = get_cache_name(url)
+    cache_name = split_url_by_volume_and_chapter(url)
     dir_name = cache_name[0]
     file_name = cache_name[1] + '.html'
     file_path = join(generate_info_ranobe.DIR_RANOBE, 'cache', dir_name, file_name)
@@ -58,14 +59,37 @@ def get_base64_url_image(url_image):
 
 from grab import Grab
 
+import re
+
+
+def volume_references(grab_doc, prefix_ref_note):
+    """Функция возвращает словарь, ключем будет id примечания,
+    а значением -- примечание главы."""
+
+    content = grab_doc.select('//ol[@class="references"]/li')
+    references = dict()
+    for ref in content:
+        ref_id = ref.attr('id')  # cite_note-*
+        # Добавим префикс:
+        ref_id = prefix_ref_note + ref_id
+        ref_text = ref.select('span[@class="reference-text"]').text().strip()
+        references[ref_id] = ref_text
+
+    return references
+
 
 def add_chapter_to_fb2(url_chapter):
     """Скачивает главу по ссылке, формирует секцию section fb2 и заполняет ее"""
 
     if not url_chapter:
-        return '', ''
+        return '', '', ''
 
     name, url = url_chapter
+
+    # Для главы: http://ruranobe.ru/r/mknr/v1/ch1
+    # вернется "v1", "ch1"
+    vol_num, ch_num = split_url_by_volume_and_chapter(url)
+    prefix_note_ref = vol_num + "_" + ch_num + "_"
 
     section = '<section>'
     section += '<title><p>{}</p></title>'.format(name)
@@ -77,17 +101,64 @@ def add_chapter_to_fb2(url_chapter):
     else:
         g = prepare_and_create_grab(url)
 
+        # Словарь с примечаниями, которые находятся в конце главы
+        refs_ch = volume_references(g.doc, prefix_note_ref)
+
+        note_section = ''
+
+        if refs_ch:
+            # TODO: рефакторинг
+            for i, key_ref in enumerate(sorted(refs_ch.keys()), 1):
+                note_section += '<section id="{}">'.format(key_ref)
+                note_section += '<title><p>{}</p></title>'.format(i)
+                note_section += '<p>{}</p>'.format(refs_ch.get(key_ref))
+                note_section += '</section>'
+
         binaries = ''
+
+        note_ref_pattern = re.compile(r"<sup.*?</sup>")
 
         content = g.doc.select('//div[@id="mw-content-text"]/*')
         for p in content:
             tag = p.node.tag
             # TODO: найден заголовок: <h2><span class="mw-headline"
             if tag == 'p':
-                # TODO: примечания
-                # Пример примечания: <a l:href="#note1" type="note">[1]</a>
-                # TODO: теги <b> и прочие менять на их аналоги
-                section += '<p>{}</p>'.format(p.text())
+                refs = p.select('sup[@class="reference"]/a')
+                text_p = ''
+                pos = 0
+                if refs.count():
+                    p_html = p.html()
+
+                    # for i, ref in enumerate(refs, 1):
+                    for ref in refs:
+                        ref_id = ref.attr('href').lstrip('#')
+                        ref_id = prefix_note_ref + ref_id
+
+                        m = note_ref_pattern.search(p_html, pos)
+                        if not m:
+                            continue
+
+                        pos = m.start()
+
+                        # TODO: возможно стоит вести счет примечаний по всему тому
+                        # ref_text = '[{}]'.format(i)
+                        # fb2_note = '<a l:href="#{}" type="note">{}</a>'.format(ref_id, ref_text)
+                        fb2_note = '<a l:href="#{}" type="note">{}</a>'.format(ref_id, ref.text())
+                        p_html = p_html.replace(m.group(), fb2_note)
+
+                    text_p = p_html
+
+                else:
+                    text_p = p.html()
+                    ## TODO: теги <b>, <br> и прочие менять на их аналоги
+                    # TODO: обработать теги внутри параграфов типа: <a class="external text"
+                    # section += '<p>{}</p>'.format(p.text())
+
+                text_p = text_p.replace('\n', '')
+                text_p = text_p.replace('<b>', '<strong>')
+                text_p = text_p.replace('</b>', '</strong>')
+                text_p = text_p.replace('<br>', '<empty-line/>')
+                section += text_p
 
             elif tag == 'div':
                 image_href = p.select('./*/a[@class="image fancybox"]/@data-fancybox-href')
@@ -115,7 +186,7 @@ def add_chapter_to_fb2(url_chapter):
 
 
     section += '</section>'
-    return section, binaries
+    return section, binaries, note_section
 
 
 # http://www.fictionbook.org/index.php/Описание_формата_FB2_от_Sclex
@@ -261,47 +332,62 @@ if __name__ == '__main__':
     other_pages = volume_info.get("pages").get("other")
 
 
-    # TODO: временно!
-    body_section, binary_section = add_chapter_to_fb2(chapters[1])
+    body_notes = '<body name="notes">'
+    body_notes += '<title><p>Примечания</p></title>'
+
+
+    # # TODO: временно!
+    # body_section, binary_section, note_section = add_chapter_to_fb2(chapters[1])
+    # body += body_section
+    # binaries += binary_section
+
+
+    body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('i'))
     body += body_section
+    body_notes += note_section
+    binaries += binary_section
+
+    body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('p1'))
+    body += body_section
+    body_notes += note_section
+    binaries += binary_section
+
+    body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('p2'))
+    body += body_section
+    body_notes += note_section
+    binaries += binary_section
+
+    # Перебор список глав:
+    for url_ch in chapters:
+        body_section, binary_section, note_section = add_chapter_to_fb2(url_ch)
+        body += body_section
+        body_notes += note_section
+        binaries += binary_section
+
+    body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('e'))
+    body += body_section
+    body_notes += note_section
+    binaries += binary_section
+
+    body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('ss'))
+    body += body_section
+    body_notes += note_section
+    binaries += binary_section
+
+    body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('a'))
+    body += body_section
+    body_notes += note_section
+    binaries += binary_section
+
+    body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('a2'))
+    body += body_section
+    body_notes += note_section
     binaries += binary_section
 
 
-    # body_section, binary_section = add_chapter_to_fb2(other_pages.get('i'))
-    # body += body_section
-    # binaries += binary_section
-    #
-    # body_section, binary_section = add_chapter_to_fb2(other_pages.get('p1'))
-    # body += body_section
-    # binaries += binary_section
-    #
-    # body_section, binary_section = add_chapter_to_fb2(other_pages.get('p2'))
-    # body += body_section
-    # binaries += binary_section
-    #
-    # # Перебор список глав:
-    # for url_ch in chapters:
-    #     body_section, binary_section = add_chapter_to_fb2(url_ch)
-    #     body += body_section
-    #     binaries += binary_section
-    #
-    # body_section, binary_section = add_chapter_to_fb2(other_pages.get('e'))
-    # body += body_section
-    # binaries += binary_section
-    #
-    # body_section, binary_section = add_chapter_to_fb2(other_pages.get('ss'))
-    # body += body_section
-    # binaries += binary_section
-    #
-    # body_section, binary_section = add_chapter_to_fb2(other_pages.get('a'))
-    # body += body_section
-    # binaries += binary_section
-    #
-    # body_section, binary_section = add_chapter_to_fb2(other_pages.get('a2'))
-    # body += body_section
-    # binaries += binary_section
-    #
-    #
+    body_notes += '</body>'
+
+
     # # body += add_chapter_to_fb2(other_pages.get('i'))
     # # body += add_chapter_to_fb2(other_pages.get('p1'))
     # # body += add_chapter_to_fb2(other_pages.get('p2'))
@@ -338,6 +424,9 @@ if __name__ == '__main__':
 
     # Добавление body часть документа fb2
     text_fb2 += body
+
+    # Добавление body с примечаниями
+    text_fb2 += body_notes
 
     # Добавление binary часть документа fb2
     text_fb2 += binaries
