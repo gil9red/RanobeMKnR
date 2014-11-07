@@ -150,14 +150,18 @@ def add_chapter_to_fb2(url_chapter):
 
                 else:
                     text_p = p.html()
-                    ## TODO: теги <b>, <br> и прочие менять на их аналоги
-                    # TODO: обработать теги внутри параграфов типа: <a class="external text"
-                    # section += '<p>{}</p>'.format(p.text())
 
                 text_p = text_p.replace('\n', '')
                 text_p = text_p.replace('<b>', '<strong>')
                 text_p = text_p.replace('</b>', '</strong>')
+                text_p = text_p.replace('<i>', '<emphasis>')
+                text_p = text_p.replace('</i>', '</emphasis>')
                 text_p = text_p.replace('<br>', '<empty-line/>')
+
+                # Находим гиперссылки на адреса и убираем их
+                for ext_href in p.select('a[@class="external text"]'):
+                    text_p = text_p.replace(ext_href.html().replace('\n', ''), ext_href.text())
+
                 section += text_p
 
             elif tag == 'div':
