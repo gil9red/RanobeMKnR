@@ -22,11 +22,13 @@ __author__ = 'ipetrash'
 
 
 class Description:
-    pass
     # <title-info> - 1 (один, обязателен);
     # <document-info> - 1 (один, обязателен);
     # <publish-info> - 0..1 (один, опционально);
     # <custom-info> - 0..n (любое число, опционально);
+
+    def get_source(self):
+        return '<description>' + '</description>'
 
 
 class Body:
@@ -58,3 +60,14 @@ class FB2:
 
     def add_binary(self):
         self.binary.append(Binary())
+
+    def get_source(self):
+        source_fb2 = ''
+        source_fb2 += ('<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0" '
+                       'xmlns:l="http://www.w3.org/1999/xlink">')
+        source_fb2 += self.description.get_source()
+        source_fb2 += '</FictionBook>'
+
+        from xml.dom.minidom import parseString
+        source_fb2 = parseString(source_fb2).toprettyxml(indent=' ')
+        return source_fb2
