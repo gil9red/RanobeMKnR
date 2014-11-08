@@ -5,8 +5,8 @@ __author__ = 'ipetrash'
 
 
 def split_url_by_volume_and_chapter(url):
-        l = url.lstrip('http://').split('/')
-        return l[-2], l[-1]
+    l = url.lstrip('http://').split('/')
+    return l[-2], l[-1]
 
 
 def prepare_and_create_grab(url):
@@ -15,7 +15,6 @@ def prepare_and_create_grab(url):
     from os.path import join
 
     data = None
-
     cache_name = split_url_by_volume_and_chapter(url)
     dir_name = cache_name[0]
     file_name = cache_name[1] + '.html'
@@ -86,10 +85,11 @@ def add_chapter_to_fb2(url_chapter):
 
     name, url = url_chapter
 
-    # Для главы: http://ruranobe.ru/r/mknr/v1/ch1
-    # вернется "v1", "ch1"
-    vol_num, ch_num = split_url_by_volume_and_chapter(url)
-    prefix_note_ref = vol_num + "_" + ch_num + "_"
+    # Секция с примечаниями
+    note_section = ''
+
+    # Секция с картинками
+    binaries = ''
 
     section = '<section>'
     section += '<title><p>{}</p></title>'.format(name)
@@ -97,15 +97,20 @@ def add_chapter_to_fb2(url_chapter):
     # Если список, тогда создаем вложенную секцию с подглавами
     if isinstance(url, list):
         for sub_ch in url:
-            section += add_chapter_to_fb2(sub_ch)
+            body, binary_section, notes = add_chapter_to_fb2(sub_ch)
+            section += body
+            binaries += binary_section
+            note_section += notes
     else:
         g = prepare_and_create_grab(url)
 
+        # Для главы: http://ruranobe.ru/r/mknr/v1/ch1
+        # вернется "v1", "ch1"
+        vol_num, ch_num = split_url_by_volume_and_chapter(url)
+        prefix_note_ref = vol_num + "_" + ch_num + "_"
+
         # Словарь с примечаниями, которые находятся в конце главы
         refs_ch = volume_references(g.doc, prefix_note_ref)
-
-        note_section = ''
-
         if refs_ch:
             # TODO: рефакторинг
             for i, key_ref in enumerate(sorted(refs_ch.keys()), 1):
@@ -113,8 +118,6 @@ def add_chapter_to_fb2(url_chapter):
                 note_section += '<title><p>{}</p></title>'.format(i)
                 note_section += '<p>{}</p>'.format(refs_ch.get(key_ref))
                 note_section += '</section>'
-
-        binaries = ''
 
         note_ref_pattern = re.compile(r"<sup.*?</sup>")
 
@@ -187,9 +190,8 @@ def add_chapter_to_fb2(url_chapter):
 
                 section += '<subtitle>* * *</subtitle>'
 
-
-
     section += '</section>'
+
     return section, binaries, note_section
 
 
@@ -219,7 +221,7 @@ if __name__ == '__main__':
 
 
     # Первый том
-    volume_info = ranobe_info['volumes'][0]
+    volume_info = ranobe_info['volumes'][2]
 
     # TODO: имя файла с томом ранобе нужно такое же как и название тома
     # Название файла тома ранобе
@@ -346,10 +348,11 @@ if __name__ == '__main__':
     # binaries += binary_section
 
 
-    body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('i'))
-    body += body_section
-    body_notes += note_section
-    binaries += binary_section
+    # # TODO: Убраны начальные иллюстрации
+    # body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('i'))
+    # body += body_section
+    # body_notes += note_section
+    # binaries += binary_section
 
     body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('p1'))
     body += body_section
@@ -390,20 +393,6 @@ if __name__ == '__main__':
 
 
     body_notes += '</body>'
-
-
-    # # body += add_chapter_to_fb2(other_pages.get('i'))
-    # # body += add_chapter_to_fb2(other_pages.get('p1'))
-    # # body += add_chapter_to_fb2(other_pages.get('p2'))
-    # #
-    # # # Перебор список глав:
-    # # for url_ch in chapters:
-    # #     body += add_chapter_to_fb2(url_ch)
-    # #
-    # # body += add_chapter_to_fb2(other_pages.get('e'))
-    # # body += add_chapter_to_fb2(other_pages.get('ss'))
-    # # body += add_chapter_to_fb2(other_pages.get('a'))
-    # # body += add_chapter_to_fb2(other_pages.get('a2'))
 
 
     body += '</body>'
