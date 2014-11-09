@@ -1,5 +1,9 @@
 __author__ = 'ipetrash'
 
+# Добавление из относительного пути
+import sys
+sys.path.append('../pyfb2')
+
 
 import fb2
 
