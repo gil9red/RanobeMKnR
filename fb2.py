@@ -21,11 +21,32 @@ __author__ = 'ipetrash'
 # </FictionBook>
 
 
+class Title_Info:
+    pass
+
+class Document_Info:
+    pass
+
+class Publish_Info:
+    pass
+
+class Custom_Info:
+    pass
+
 class Description:
+    # Поля раздела description:
     # <title-info> - 1 (один, обязателен);
     # <document-info> - 1 (один, обязателен);
     # <publish-info> - 0..1 (один, опционально);
     # <custom-info> - 0..n (любое число, опционально);
+    # То есть обязательны разделы <title-info> и <document-info>, а остальные
+    # добавляются по необходимости.
+
+    def __init__(self):
+        self.title_info = Title_Info()
+        self.document_info = Document_Info()
+        self.publish_info = None
+        self.custom_info = list()
 
     def get_source(self):
         return '<description>' + '</description>'
