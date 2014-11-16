@@ -41,12 +41,10 @@ def prepare_and_create_grab(url):
 
 import os.path
 import json
-
-import generate_info_ranobe
-
-
 from urllib.request import urlopen
 import base64
+
+import generate_info_ranobe
 
 
 def get_base64_url_image(url_image):
@@ -200,6 +198,16 @@ def add_chapter_to_fb2(url_chapter):
 
 
 if __name__ == '__main__':
+    # # Добавление из относительного пути модуля pyfb2
+    # import sys
+    # sys.path.append('../pyfb2')
+    #
+    # from pyfb2 import fb2
+    #
+    # book = fb2.FB2()
+    # print(book.get_source())
+
+
     # Путь к папке с генерированной информацией
     ranobe_dir = generate_info_ranobe.DIR_RANOBE
 
@@ -213,7 +221,6 @@ if __name__ == '__main__':
         # Десериализация данных в объекты python'а
         ranobe_info = json.load(f)
 
-
     text_fb2 = ('<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0" '
                 'xmlns:l="http://www.w3.org/1999/xlink">')
 
@@ -226,11 +233,10 @@ if __name__ == '__main__':
     # TODO: имя файла с томом ранобе нужно такое же как и название тома
     # Название файла тома ранобе
     # name_volume_fb2 = volume_info['name'].replace(':', '.') + '.fb2'
-    name_volume_fb2 = 'ranobe.fb2'
+    name_volume_fb2 = 'ranobe_v2_pyfb2.fb2'
 
     # Путь к файлу ранобе
     path_volume_fb2 = os.path.join(ranobe_dir, name_volume_fb2)
-
 
     description = '<description>'
 
@@ -316,7 +322,6 @@ if __name__ == '__main__':
 
     description += '</description>'
 
-
     body = '<body>'
     body += '<title><p>{}</p></title>'.format(name_volume)
 
@@ -336,7 +341,6 @@ if __name__ == '__main__':
 
     # Словарь страниц тома, которые не относятся к главам: послесловие, пролог, и т.д.
     other_pages = volume_info.get("pages").get("other")
-
 
     body_notes = '<body name="notes">'
     body_notes += '<title><p>Примечания</p></title>'
@@ -391,9 +395,7 @@ if __name__ == '__main__':
     body_notes += note_section
     binaries += binary_section
 
-
     body_notes += '</body>'
-
 
     body += '</body>'
 
@@ -432,5 +434,6 @@ if __name__ == '__main__':
         xml = text_fb2
 
         from xml.dom.minidom import parseString
+
         xml = parseString(xml).toprettyxml(indent=' ')
         f.write(xml)
