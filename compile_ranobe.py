@@ -207,6 +207,8 @@ if __name__ == '__main__':
     # book = fb2.FB2()
     # print(book.get_source())
 
+    from pyfb2 import fb2
+
 
     # Путь к папке с генерированной информацией
     ranobe_dir = generate_info_ranobe.DIR_RANOBE
@@ -227,7 +229,7 @@ if __name__ == '__main__':
     binaries = ''
 
 
-    # Первый том
+    # Третий том
     volume_info = ranobe_info['volumes'][2]
 
     # TODO: имя файла с томом ранобе нужно такое же как и название тома
