@@ -162,20 +162,8 @@ def add_chapter_to_fb2(url_chapter, book_fb2, parent_section=None):
             elif tag == 'center' and p.attr('class') == 'subtitle':
                 section.append_subtitle()
 
-# http://www.fictionbook.org/index.php/Описание_формата_FB2_от_Sclex
-# http://www.fictionbook.org/index.php/Элементы_стандарта_FictionBook
 
 if __name__ == '__main__':
-    # TODO: удалить
-    # # Добавление из относительного пути модуля pyfb2
-    # import sys
-    # sys.path.append('../pyfb2')
-    #
-    # from pyfb2 import fb2
-    #
-    # book = fb2.FB2()
-    # print(book.get_source())
-
     # Путь к папке с генерированной информацией
     ranobe_dir = generate_info_ranobe.DIR_RANOBE
 
