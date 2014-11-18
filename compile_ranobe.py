@@ -86,22 +86,29 @@ def add_chapter_to_fb2(url_chapter, book_fb2):
 
     name, url = url_chapter
 
-    # Секция с примечаниями
-    note_section = ''
+    # # Секция с примечаниями
+    # note_section = ''
+    #
+    # # Секция с картинками
+    # binaries = ''
 
-    # Секция с картинками
-    binaries = ''
 
-    section = '<section>'
-    section += '<title><p>{}</p></title>'.format(name)
+    # NOTE: pyfb2
+    section = book.body.doc.section.append()
+    section.title = name
+
+    # section = '<section>'
+    # section += '<title><p>{}</p></title>'.format(name)
 
     # Если список, тогда создаем вложенную секцию с подглавами
     if isinstance(url, list):
         for sub_ch in url:
-            body, binary_section, notes = add_chapter_to_fb2(sub_ch)
-            section += body
-            binaries += binary_section
-            note_section += notes
+            # NOTE: pyfb2
+            add_chapter_to_fb2(sub_ch, book_fb2)
+            # body, binary_section, notes = add_chapter_to_fb2(sub_ch)
+            # section += body
+            # binaries += binary_section
+            # note_section += notes
     else:
         g = prepare_and_create_grab(url)
 
@@ -115,10 +122,13 @@ def add_chapter_to_fb2(url_chapter, book_fb2):
         if refs_ch:
             # TODO: рефакторинг
             for i, key_ref in enumerate(sorted(refs_ch.keys()), 1):
-                note_section += '<section id="{}">'.format(key_ref)
-                note_section += '<title><p>{}</p></title>'.format(i)
-                note_section += '<p>{}</p>'.format(refs_ch.get(key_ref))
-                note_section += '</section>'
+                # NOTE: pyfb2
+                book.body.notes.append(key_ref, i, refs_ch.get(key_ref))
+
+                # note_section += '<section id="{}">'.format(key_ref)
+                # note_section += '<title><p>{}</p></title>'.format(i)
+                # note_section += '<p>{}</p>'.format(refs_ch.get(key_ref))
+                # note_section += '</section>'
 
         note_ref_pattern = re.compile(r"<sup.*?</sup>")
 
@@ -166,6 +176,8 @@ def add_chapter_to_fb2(url_chapter, book_fb2):
                 for ext_href in p.select('a[@class="external text"]'):
                     text_p = text_p.replace(ext_href.html().replace('\n', ''), ext_href.text())
 
+                # NOTE: pyfb2
+
                 section += text_p
 
             elif tag == 'div':
@@ -189,7 +201,10 @@ def add_chapter_to_fb2(url_chapter, book_fb2):
                 # но, по-моему, три звездочки "* * *" лучше.
                 # section += '<subtitle>{}</subtitle>'.format(p.text())
 
-                section += '<subtitle>* * *</subtitle>'
+
+                # NOTE: pyfb2
+                section.append_subtitle()
+                # section += '<subtitle>* * *</subtitle>'
 
     section += '</section>'
 
