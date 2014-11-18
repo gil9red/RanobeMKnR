@@ -75,7 +75,7 @@ def volume_references(grab_doc, prefix_ref_note):
     return references
 
 
-def add_chapter_to_fb2(url_chapter, book_fb2):
+def add_chapter_to_fb2(url_chapter, book_fb2, parent_section=None):
     """Скачивает главу по ссылке, формирует секцию section fb2 и заполняет ее"""
 
     # if not url_chapter:
@@ -94,7 +94,12 @@ def add_chapter_to_fb2(url_chapter, book_fb2):
 
 
     # NOTE: pyfb2
-    section = book.body.doc.section.append()
+    section = ''
+    if not parent_section:
+        section = book.body.doc.section.append()
+    else:
+        section = parent_section.append_sub_section()
+
     section.title.append_paragraph().text = name
 
     # section = '<section>'
@@ -104,7 +109,7 @@ def add_chapter_to_fb2(url_chapter, book_fb2):
     if isinstance(url, list):
         for sub_ch in url:
             # NOTE: pyfb2
-            add_chapter_to_fb2(sub_ch, book_fb2)
+            add_chapter_to_fb2(sub_ch, book_fb2, parent_section=section)
             # body, binary_section, notes = add_chapter_to_fb2(sub_ch)
             # section += body
             # binaries += binary_section
@@ -123,7 +128,7 @@ def add_chapter_to_fb2(url_chapter, book_fb2):
             # TODO: рефакторинг
             for i, key_ref in enumerate(sorted(refs_ch.keys()), 1):
                 # NOTE: pyfb2
-                book.body.notes.append(key_ref, i, refs_ch.get(key_ref))
+                book.body.notes.append(key_ref, str(i), refs_ch.get(key_ref))
 
                 # note_section += '<section id="{}">'.format(key_ref)
                 # note_section += '<title><p>{}</p></title>'.format(i)
@@ -157,7 +162,7 @@ def add_chapter_to_fb2(url_chapter, book_fb2):
                         # TODO: возможно стоит вести счет примечаний по всему тому
                         # ref_text = '[{}]'.format(i)
                         # fb2_note = '<a l:href="#{}" type="note">{}</a>'.format(ref_id, ref_text)
-                        fb2_note = '<a l:href="#{}" type="note">{}</a>'.format(ref_id, ref.text())
+                        fb2_note = '<a xlink:href="#{}" type="note">{}</a>'.format(ref_id, ref.text())
                         p_html = p_html.replace(m.group(), fb2_note)
 
                     text_p = p_html
@@ -262,7 +267,7 @@ if __name__ == '__main__':
 
 
     # Третий том
-    volume_info = ranobe_info['volumes'][2]
+    volume_info = ranobe_info['volumes'][4]
 
     # TODO: имя файла с томом ранобе нужно такое же как и название тома
     # Название файла тома ранобе
@@ -311,8 +316,8 @@ if __name__ == '__main__':
     # Добавление иллюстратора
     illustrator = book.description.title_info.author.append()
     first_name, last_name = tuple(volume_info['illustrator'].split(' '))
-    author.first_name.text = first_name
-    author.last_name.text = last_name
+    illustrator.first_name.text = first_name
+    illustrator.last_name.text = last_name
 
     # # Добавление иллюстратора
     # description += '<author>'
