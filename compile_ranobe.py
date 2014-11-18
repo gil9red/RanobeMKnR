@@ -1,7 +1,8 @@
 import os
 import json
 import re
-from datetime import date
+import datetime
+import gc
 
 from grab import Grab
 
@@ -65,7 +66,7 @@ def volume_references(grab_doc, prefix_ref_note):
 
 
 def add_chapter_to_fb2(url_chapter, book_fb2, parent_section=None):
-    """Скачивает главу по ссылке, формирует секцию section fb2 и заполняет ее"""
+    """Скачивает главу по ссылке, формирует секцию section fb2 и заполняет ее."""
 
     if not url_chapter or not book_fb2:
         return
@@ -97,15 +98,20 @@ def add_chapter_to_fb2(url_chapter, book_fb2, parent_section=None):
         refs_ch = volume_references(g.doc, prefix_note_ref)
         if refs_ch:
             all_refs = sorted(refs_ch.keys())
+            notes = book.body.notes
             for i, key_ref in enumerate(all_refs, 1):
-                book.body.notes.append(key_ref, str(i), refs_ch.get(key_ref))
+                text = refs_ch.get(key_ref)
+                notes.append(key_ref, str(i), text)
 
         note_ref_pattern = re.compile(r"<sup.*?</sup>")
 
         content = g.doc.select('//div[@id="mw-content-text"]/*')
         for p in content:
             tag = p.node.tag
-            # TODO: найден заголовок: <h2><span class="mw-headline"
+
+            # TODO: найден в начальных иллюстрациях заголовок:
+            # <h2><span class="mw-headline"
+
             if tag == 'p':
                 refs = p.select('sup[@class="reference"]/a')
                 text_p = ''
@@ -182,128 +188,163 @@ if __name__ == '__main__':
         # Десериализация данных в объекты python'а
         ranobe_info = json.load(f)
 
-    # Создание документа fb2
-    book = fb2.FB2()
+    # Перебор томов ранобе:
+    for volume_info in ranobe_info['volumes']:
+        # Создание документа fb2
+        book = fb2.FB2()
 
-    # Третий том
-    volume_info = ranobe_info['volumes'][2]
+        # Название файла тома ранобе
+        filename_volume_fb2 = volume_info['name'].replace(':', '.') + '.fb2'
 
-    # for volume_info in ranobe_info['volumes']:
-    # TODO: имя файла с томом ранобе нужно такое же как и название тома
-    # Название файла тома ранобе
-    # name_volume_fb2 = volume_info['name'].replace(':', '.') + '.fb2'
-    name_volume_fb2 = 'ranobe_v2_pyfb2.fb2'
+        # Третий том
+        # volume_info = ranobe_info['volumes'][2]
 
-    # Путь к файлу ранобе
-    path_volume_fb2 = os.path.join(ranobe_dir, name_volume_fb2)
+        # TODO: имя файла с томом ранобе нужно такое же как и название тома
+        # Название файла тома ранобе
+        # name_volume_fb2 = volume_info['name'].replace(':', '.') + '.fb2'
+        # name_volume_fb2 = 'ranobe_v2_pyfb2.fb2'
 
-    # Добавление информации о переводчиках:
-    translation = volume_info.get('translation')
-    if translation:
-        translators = translation.get('translators')
-        if translators:
-            for tr_name in translators:
-                translator = book.description.title_info.translator.append()
-                translator.nickname.text = tr_name
+        # Путь к файлу ранобе
+        path_volume_fb2 = os.path.join(ranobe_dir, 'mknr', filename_volume_fb2)
 
-    # Имя тома
-    name_volume = volume_info['name']
+        # Путь к папке, в которых будут сохранены fb2 документы ранобе
+        dir_volume_fb2 = os.path.dirname(path_volume_fb2)
+        if not os.path.exists(dir_volume_fb2):
+            os.makedirs(dir_volume_fb2)
 
-    # Добавление имени тома
-    book.description.title_info.book_title.text = name_volume
+        # Описание информации о произведении
+        title_info = book.description.title_info
 
-    # Добавление автора
-    author = book.description.title_info.author.append()
-    first_name, last_name = tuple(volume_info['author'].split(' '))
-    author.first_name.text = first_name
-    author.last_name.text = last_name
+        # Добавление информации о переводчиках:
+        translation = volume_info.get('translation')
+        if translation:
+            translators = translation.get('translators')
+            if translators:
+                for tr_name in translators:
+                    translator = title_info.translator.append()
+                    translator.nickname.text = tr_name
 
-    # Добавление иллюстратора
-    illustrator = book.description.title_info.author.append()
-    first_name, last_name = tuple(volume_info['illustrator'].split(' '))
-    illustrator.first_name.text = first_name
-    illustrator.last_name.text = last_name
+        # Имя тома
+        name_volume = volume_info['name']
 
-    # Добавление аннотации
-    for row in ranobe_info['annotation'].split('\n'):
-        book.description.title_info.annotation.append_paragraph().text = row
+        # Международный стандартный книжный номер (англ. International Standard Book Number,
+        # сокращённо — англ. ISBN) — уникальный номер книжного издания, необходимый для
+        # распространения книги в торговых сетях и автоматизации работы с изданием.
+        isbn = volume_info['ISBN']
 
-    # Добавлени серии и номера в серии
-    book.description.title_info.sequence.append(volume_info['series'], volume_info['number'])
+        # Метаинформация о книге
+        description = book.description
 
-    # Добавление жанра(ов)
-    book.description.title_info.genre.append(Genres.sf_fantasy.value)
+        # Добавление имени тома
+        book_title = description.title_info.book_title
+        book_title.text = name_volume
 
-    # Язык тома
-    book.description.title_info.lang.value = 'ru'
+        # Добавление автора
+        author = description.title_info.author.append()
+        first_name, last_name = tuple(volume_info['author'].split(' '))
+        author.first_name.text = first_name
+        author.last_name.text = last_name
 
-    # Исходный язык
-    book.description.title_info.src_lang.value = 'jp'
+        # Добавление иллюстратора
+        illustrator = description.title_info.author.append()
+        first_name, last_name = tuple(volume_info['illustrator'].split(' '))
+        illustrator.first_name.text = first_name
+        illustrator.last_name.text = last_name
 
-    # Обложка тома
-    cover_image = book.append_image(url=volume_info['url_cover'])
-    book.description.title_info.coverpage.append(cover_image)
+        # Добавление аннотации
+        annotation = description.title_info.annotation
+        for row in ranobe_info['annotation'].split('\n'):
+            annotation.append_paragraph().text = row
 
-    document_info = book.description.document_info
+        # Добавлени серии и номера в серии
+        sequence = description.title_info.sequence
+        sequence.append(volume_info['series'], volume_info['number'])
 
-    # Автор документа, т.е. тот, кто его создал/сгенерировал/сконвертировал.
-    doc_author = document_info.author.append()
-    doc_author.nickname.text = 'gil9red'
-    doc_author.home_page.append('https://github.com/gil9red')
+        # Добавление жанра(ов)
+        genre = description.title_info.genre
+        genre.append(Genres.sf_fantasy.value)
 
-    document_info.date.set_from_date(date.today())
+        # Язык тома
+        lang = description.title_info.lang
+        lang.value = 'ru'
 
-    isbn = volume_info['ISBN']
+        # Исходный язык
+        src_lang = description.title_info.src_lang
+        src_lang.value = 'jp'
 
-    document_info.id.value = isbn
+        # Обложка тома
+        cover_image = book.append_image(url=volume_info['url_cover'])
+        coverpage = description.title_info.coverpage
+        coverpage.append(cover_image)
 
-    # Откуда взят оригинальный документ, доступный в online:
-    book.description.document_info.src_url.append('http://ruranobe.ru/r/mknr')
+        # Описание информации о конкретном FB2.x документе
+        document_info = description.document_info
 
-    # Перечисление программ, которые использовались при подготовке документа.
-    book.description.document_info.program_used.append('RanobeMKnR')
+        # Автор документа, т.е. тот, кто его создал/сгенерировал/сконвертировал.
+        doc_author = document_info.author.append()
+        doc_author.nickname.text = 'gil9red'
+        doc_author.home_page.append('https://github.com/gil9red')
 
-    # Версия документа
-    book.description.document_info.version.value = '1.0'
+        # Дата создания документа
+        date = document_info.date
+        date.set_from_date(datetime.date.today())
 
-    # Информация о бумажном (или другом) издании, на основании которого создан FB2.x документ.
-    book.description.publish_info.isbn.text = isbn
+        # Уникальный идентификатор документа FB2
+        # Мне кажется ISBN годный уникальный идентификатор
+        document_info.id.value = isbn
 
-    # заглавие для отображения в начале книги
-    book.body.doc.title.append_paragraph().text = name_volume
+        # Откуда взят оригинальный документ, доступный в online:
+        src_url = document_info.src_url
+        src_url.append('http://ruranobe.ru/r/mknr')  # Сайт, с которого скрипт вытаскивает ранобе
 
-    # Порядок глав (с типами страниц) в томе:
-    # i    - Начальные иллюстрации
-    # p1   - Вступление
-    # p2   - Пролог
-    # c    - Глава (т.е. страницы, начинающиеся с 'c': 'ch*', c*ch*)
-    # e    - Эпилог
-    # ss   - Похоже на дополнительную инфу
-    # a    - Послесловие
-    # a2   - Запоздавший шедевр
-    # at   - Послесловие команды перевода
+        # Перечисление программ, которые использовались при подготовке документа.
+        program_used = document_info.program_used
+        program_used.append('RanobeMKnR')
 
-    # Список глав тома
-    chapters = volume_info.get("pages").get("chapters")
+        # Версия документа
+        document_info.version.value = '1.0'
 
-    # Словарь страниц тома, которые не относятся к главам: послесловие, пролог, и т.д.
-    other_pages = volume_info.get("pages").get("other")
+        # Информация о бумажном (или другом) издании, на основании которого создан FB2.x документ.
+        publish_info = description.publish_info
+        publish_info.isbn.text = isbn
 
-    book.body.notes.title.append_paragraph().text = 'Примечания'
+        # Заглавие для отображения в начале книги
+        title = book.body.doc.title
+        title.append_paragraph().text = name_volume
 
-    # # TODO: Убраны начальные иллюстрации
-    # add_chapter_to_fb2(other_pages.get('i'), book)
+        # Список глав тома
+        chapters = volume_info.get("pages").get("chapters")
 
-    add_chapter_to_fb2(other_pages.get('p1'), book)
-    add_chapter_to_fb2(other_pages.get('p2'), book)
+        # Словарь страниц тома, которые не относятся к главам: послесловие, пролог, и т.д.
+        other_pages = volume_info.get("pages").get("other")
 
-    # Перебор списка глав:
-    for url_ch in chapters:
-        add_chapter_to_fb2(url_ch, book)
+        # Примечания:
+        notes_title = book.body.notes.title
+        title.append_paragraph().text = 'Примечания'
 
-    add_chapter_to_fb2(other_pages.get('e'), book)
-    add_chapter_to_fb2(other_pages.get('ss'), book)
-    add_chapter_to_fb2(other_pages.get('a'), book)
-    add_chapter_to_fb2(other_pages.get('a2'), book)
+        # # TODO: Убраны начальные иллюстрации
+        # add_chapter_to_fb2(other_pages.get('i'), book)  # Начальные иллюстрации
 
-    book.save(path_volume_fb2)
+        add_chapter_to_fb2(other_pages.get('p1'), book)  # Вступление
+        add_chapter_to_fb2(other_pages.get('p2'), book)  # Пролог
+
+        # Перебор списка глав:
+        for url_ch in chapters:
+            add_chapter_to_fb2(url_ch, book)
+
+        add_chapter_to_fb2(other_pages.get('e'), book)  # Эпилог
+        add_chapter_to_fb2(other_pages.get('ss'), book)  # Похоже на дополнительную инфу
+        add_chapter_to_fb2(other_pages.get('a'), book)  # Послесловие
+        add_chapter_to_fb2(other_pages.get('a2'), book)  # Запоздавший шедевр
+
+        book.save(path_volume_fb2)
+
+        # Подсчитываем размер файла документа fb2
+        size = os.path.getsize(path_volume_fb2)  # bytes
+        size /= 1024  # kb
+        size /= 1024  # mb
+        size = round(size, 2)
+        print('Закончена генерация "{}", размер {} MB.'.format(name_volume, size))
+
+        # Вызываем сборщик мусора
+        gc.collect()
