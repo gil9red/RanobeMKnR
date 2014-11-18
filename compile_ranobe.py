@@ -267,7 +267,7 @@ if __name__ == '__main__':
 
 
     # Третий том
-    volume_info = ranobe_info['volumes'][4]
+    volume_info = ranobe_info['volumes'][2]
 
     # TODO: имя файла с томом ранобе нужно такое же как и название тома
     # Название файла тома ранобе
