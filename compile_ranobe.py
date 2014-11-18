@@ -96,8 +96,8 @@ def add_chapter_to_fb2(url_chapter, book_fb2, parent_section=None):
         # Словарь с примечаниями, которые находятся в конце главы
         refs_ch = volume_references(g.doc, prefix_note_ref)
         if refs_ch:
-            # TODO: рефакторинг
-            for i, key_ref in enumerate(sorted(refs_ch.keys()), 1):
+            all_refs = sorted(refs_ch.keys())
+            for i, key_ref in enumerate(all_refs, 1):
                 book.body.notes.append(key_ref, str(i), refs_ch.get(key_ref))
 
         note_ref_pattern = re.compile(r"<sup.*?</sup>")
@@ -113,7 +113,6 @@ def add_chapter_to_fb2(url_chapter, book_fb2, parent_section=None):
                 if refs.count():
                     p_html = p.html()
 
-                    # for i, ref in enumerate(refs, 1):
                     for ref in refs:
                         ref_id = ref.attr('href').lstrip('#')
                         ref_id = prefix_note_ref + ref_id
@@ -125,8 +124,6 @@ def add_chapter_to_fb2(url_chapter, book_fb2, parent_section=None):
                         pos = m.start()
 
                         # TODO: возможно стоит вести счет примечаний по всему тому
-                        # ref_text = '[{}]'.format(i)
-                        # fb2_note = '<a l:href="#{}" type="note">{}</a>'.format(ref_id, ref_text)
                         fb2_note = '<a xlink:href="#{}" type="note">{}</a>'.format(ref_id, ref.text())
                         p_html = p_html.replace(m.group(), fb2_note)
 
@@ -191,6 +188,7 @@ if __name__ == '__main__':
     # Третий том
     volume_info = ranobe_info['volumes'][2]
 
+    # for volume_info in ranobe_info['volumes']:
     # TODO: имя файла с томом ранобе нужно такое же как и название тома
     # Название файла тома ранобе
     # name_volume_fb2 = volume_info['name'].replace(':', '.') + '.fb2'
@@ -199,7 +197,14 @@ if __name__ == '__main__':
     # Путь к файлу ранобе
     path_volume_fb2 = os.path.join(ranobe_dir, name_volume_fb2)
 
-    # TODO: добавить информацию о переводчиках
+    # Добавление информации о переводчиках:
+    translation = volume_info.get('translation')
+    if translation:
+        translators = translation.get('translators')
+        if translators:
+            for tr_name in translators:
+                translator = book.description.title_info.translator.append()
+                translator.nickname.text = tr_name
 
     # Имя тома
     name_volume = volume_info['name']
@@ -252,14 +257,11 @@ if __name__ == '__main__':
 
     document_info.id.value = isbn
 
-    # TODO: добавить ссылки на сайт переводчиков ранобе, откуда, собственно, скрипт
-    # и берет данные
     # Откуда взят оригинальный документ, доступный в online:
-    # description += '<src-url>{}</src-url>'.format('')
+    book.description.document_info.src_url.append('http://ruranobe.ru/r/mknr')
 
-    # TODO: добавить
     # Перечисление программ, которые использовались при подготовке документа.
-    # description += '<program-used>{}</program-used>'.format('')
+    book.description.document_info.program_used.append('RanobeMKnR')
 
     # Версия документа
     book.description.document_info.version.value = '1.0'
@@ -289,19 +291,19 @@ if __name__ == '__main__':
 
     book.body.notes.title.append_paragraph().text = 'Примечания'
 
-    # TODO: Убраны начальные иллюстрации
-    # add_chapter_to_fb2(other_pages.get('i'), book_fb2=book)
+    # # TODO: Убраны начальные иллюстрации
+    # add_chapter_to_fb2(other_pages.get('i'), book)
 
-    add_chapter_to_fb2(other_pages.get('p1'), book_fb2=book)
-    add_chapter_to_fb2(other_pages.get('p2'), book_fb2=book)
+    add_chapter_to_fb2(other_pages.get('p1'), book)
+    add_chapter_to_fb2(other_pages.get('p2'), book)
 
     # Перебор списка глав:
     for url_ch in chapters:
-        add_chapter_to_fb2(url_ch, book_fb2=book)
+        add_chapter_to_fb2(url_ch, book)
 
-    add_chapter_to_fb2(other_pages.get('e'), book_fb2=book)
-    add_chapter_to_fb2(other_pages.get('ss'), book_fb2=book)
-    add_chapter_to_fb2(other_pages.get('a'), book_fb2=book)
-    add_chapter_to_fb2(other_pages.get('a2'), book_fb2=book)
+    add_chapter_to_fb2(other_pages.get('e'), book)
+    add_chapter_to_fb2(other_pages.get('ss'), book)
+    add_chapter_to_fb2(other_pages.get('a'), book)
+    add_chapter_to_fb2(other_pages.get('a2'), book)
 
     book.save(path_volume_fb2)
