@@ -166,6 +166,7 @@ def add_chapter_to_fb2(url_chapter, book_fb2, parent_section=None):
 # http://www.fictionbook.org/index.php/Элементы_стандарта_FictionBook
 
 if __name__ == '__main__':
+    # TODO: удалить
     # # Добавление из относительного пути модуля pyfb2
     # import sys
     # sys.path.append('../pyfb2')
