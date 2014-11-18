@@ -95,7 +95,7 @@ def add_chapter_to_fb2(url_chapter, book_fb2):
 
     # NOTE: pyfb2
     section = book.body.doc.section.append()
-    section.title = name
+    section.title.append_paragraph().text = name
 
     # section = '<section>'
     # section += '<title><p>{}</p></title>'.format(name)
@@ -177,24 +177,30 @@ def add_chapter_to_fb2(url_chapter, book_fb2):
                     text_p = text_p.replace(ext_href.html().replace('\n', ''), ext_href.text())
 
                 # NOTE: pyfb2
-
-                section += text_p
+                section.append_source_text().text = text_p
+                # section += text_p
 
             elif tag == 'div':
                 image_href = p.select('./*/a[@class="image fancybox"]/@data-fancybox-href')
                 if image_href.count():
                     href = image_href.text()
 
-                    # Определение суффикса/типа файла изображения
-                    # http://ruranobe.ru/w/images/3/3b/MKnR_v01_a.png -> png
-                    id_im = os.path.split(href)[1]
-                    # TODO: проверять формат изображения (как я помню, может быть png или jpg)
-                    suffix = os.path.splitext(href)[1][1:]
-                    binaries += '<binary id="{}" content-type="image/{}">'.format(id_im, suffix)
-                    binaries += get_base64_url_image(href)
-                    binaries += '</binary>'
+                    image = book_fb2.append_image(url=href)
+                    section.append_image(image)
 
-                    section += '<image l:href="#{}"/>'.format(id_im)
+                    # # Получение id изображения
+                    # # http://ruranobe.ru/w/images/3/3b/MKnR_v01_a.png -> MKnR_v01_a.png
+                    # id_im = os.path.split(href)[1]
+                    #
+                    # # Определение суффикса/типа файла изображения
+                    # # http://ruranobe.ru/w/images/3/3b/MKnR_v01_a.png -> png
+                    # # TODO: проверять формат изображения (как я помню, может быть png или jpg)
+                    # suffix = os.path.splitext(href)[1][1:]
+                    # binaries += '<binary id="{}" content-type="image/{}">'.format(id_im, suffix)
+                    # binaries += get_base64_url_image(href)
+                    # binaries += '</binary>'
+                    #
+                    # section += '<image l:href="#{}"/>'.format(id_im)
 
             elif tag == 'center' and p.attr('class') == 'subtitle':
                 # Разделителем из оригинального текста является: ◊ ◊ ◊,
@@ -206,14 +212,15 @@ def add_chapter_to_fb2(url_chapter, book_fb2):
                 section.append_subtitle()
                 # section += '<subtitle>* * *</subtitle>'
 
-    section += '</section>'
-
-    return section, binaries, note_section
+    # section += '</section>'
+    #
+    # return section, binaries, note_section
 
 
 # http://www.fictionbook.org/index.php/Описание_формата_FB2_от_Sclex
 # http://www.fictionbook.org/index.php/Элементы_стандарта_FictionBook
 
+from datetime import date
 
 if __name__ == '__main__':
     # # Добавление из относительного пути модуля pyfb2
@@ -289,8 +296,8 @@ if __name__ == '__main__':
     # Добавление автора
     author = book.description.title_info.author.append()
     first_name, last_name = tuple(volume_info['author'].split(' '))
-    author.first_name = first_name
-    author.last_name = last_name
+    author.first_name.text = first_name
+    author.last_name.text = last_name
 
     # # Добавление автора
     # description += '<author>'
@@ -304,8 +311,8 @@ if __name__ == '__main__':
     # Добавление иллюстратора
     illustrator = book.description.title_info.author.append()
     first_name, last_name = tuple(volume_info['illustrator'].split(' '))
-    author.first_name = first_name
-    author.last_name = last_name
+    author.first_name.text = first_name
+    author.last_name.text = last_name
 
     # # Добавление иллюстратора
     # description += '<author>'
@@ -379,9 +386,13 @@ if __name__ == '__main__':
 
 
     # NOTE: pyfb2
+    document_info = book.description.document_info
+
+
+    # NOTE: pyfb2
     # Автор документа, т.е. тот, кто его создал/сгенерировал/сконвертировал.
-    doc_author = book.description.document_info.author.append()
-    doc_author.nickname = 'gil9red'
+    doc_author = document_info.author.append()
+    doc_author.nickname.text = 'gil9red'
     doc_author.home_page.append('https://github.com/gil9red')
 
     # # Автор документа, т.е. тот, кто его создал/сгенерировал/сконвертировал.
@@ -389,6 +400,16 @@ if __name__ == '__main__':
     # description += '<nickname>{}</nickname>'.format('gil9red')
     # description += '<home-page>{}</home-page>'.format('https://github.com/gil9red')
     # description += '</author>'
+
+
+    # NOTE: pyfb2
+    document_info.date.set_from_date(date.today())
+
+
+    isbn = volume_info['ISBN']
+
+    # NOTE: pyfb2
+    document_info.id.value = isbn
 
 
     # TODO: добавить ссылки на сайт переводчиков ранобе, откуда, собственно, скрипт
@@ -415,7 +436,7 @@ if __name__ == '__main__':
 
     # NOTE: pyfb2
     # Информация о бумажном (или другом) издании, на основании которого создан FB2.x документ.
-    book.description.publish_info.isbn = volume_info['ISBN']
+    book.description.publish_info.isbn.text = isbn
 
     # # Информация о бумажном (или другом) издании, на основании которого создан FB2.x документ.
     # description += '<publish-info>'
