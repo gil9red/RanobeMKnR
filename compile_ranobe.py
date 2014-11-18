@@ -41,17 +41,17 @@ def prepare_and_create_grab(url):
 
 import os.path
 import json
-from urllib.request import urlopen
-import base64
+# from urllib.request import urlopen
+# import base64
 
 import generate_info_ranobe
 
 
-def get_base64_url_image(url_image):
-    """Функция возвращает base64 изображения по url."""
-
-    image = urlopen(url_image)
-    return base64.b64encode(image.read()).decode("utf-8")
+# def get_base64_url_image(url_image):
+#     """Функция возвращает base64 изображения по url."""
+#
+#     image = urlopen(url_image)
+#     return base64.b64encode(image.read()).decode("utf-8")
 
 
 from grab import Grab
@@ -75,11 +75,14 @@ def volume_references(grab_doc, prefix_ref_note):
     return references
 
 
-def add_chapter_to_fb2(url_chapter):
+def add_chapter_to_fb2(url_chapter, book_fb2):
     """Скачивает главу по ссылке, формирует секцию section fb2 и заполняет ее"""
 
-    if not url_chapter:
-        return '', '', ''
+    # if not url_chapter:
+    #     return '', '', ''
+
+    if not url_chapter or not book_fb2:
+        return
 
     name, url = url_chapter
 
@@ -448,47 +451,62 @@ if __name__ == '__main__':
 
 
     # # TODO: Убраны начальные иллюстрации
-    # body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('i'))
+    # add_chapter_to_fb2(other_pages.get('i'), book_fb2=book)
+    # # body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('i'))
+    # # body += body_section
+    # # body_notes += note_section
+    # # binaries += binary_section
+
+    # NOTE: pyfb2
+    add_chapter_to_fb2(other_pages.get('p1'), book_fb2=book)
+    # body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('p1'))
     # body += body_section
     # body_notes += note_section
     # binaries += binary_section
 
-    body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('p1'))
-    body += body_section
-    body_notes += note_section
-    binaries += binary_section
+    # NOTE: pyfb2
+    add_chapter_to_fb2(other_pages.get('p2'), book_fb2=book)
+    # body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('p2'))
+    # body += body_section
+    # body_notes += note_section
+    # binaries += binary_section
 
-    body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('p2'))
-    body += body_section
-    body_notes += note_section
-    binaries += binary_section
-
-    # Перебор список глав:
+    # Перебор списка глав:
     for url_ch in chapters:
-        body_section, binary_section, note_section = add_chapter_to_fb2(url_ch)
-        body += body_section
-        body_notes += note_section
-        binaries += binary_section
+        # NOTE: pyfb2
+        add_chapter_to_fb2(url_ch, book_fb2=book)
+        # body_section, binary_section, note_section = add_chapter_to_fb2(url_ch)
+        # body += body_section
+        # body_notes += note_section
+        # binaries += binary_section
 
-    body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('e'))
-    body += body_section
-    body_notes += note_section
-    binaries += binary_section
+    # NOTE: pyfb2
+    add_chapter_to_fb2(other_pages.get('e'), book_fb2=book)
+    # body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('e'))
+    # body += body_section
+    # body_notes += note_section
+    # binaries += binary_section
 
-    body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('ss'))
-    body += body_section
-    body_notes += note_section
-    binaries += binary_section
+    # NOTE: pyfb2
+    add_chapter_to_fb2(other_pages.get('ss'), book_fb2=book)
+    # body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('ss'))
+    # body += body_section
+    # body_notes += note_section
+    # binaries += binary_section
 
-    body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('a'))
-    body += body_section
-    body_notes += note_section
-    binaries += binary_section
+    # NOTE: pyfb2
+    add_chapter_to_fb2(other_pages.get('a'), book_fb2=book)
+    # body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('a'))
+    # body += body_section
+    # body_notes += note_section
+    # binaries += binary_section
 
-    body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('a2'))
-    body += body_section
-    body_notes += note_section
-    binaries += binary_section
+    # NOTE: pyfb2
+    add_chapter_to_fb2(other_pages.get('a2'), book_fb2=book)
+    # body_section, binary_section, note_section = add_chapter_to_fb2(other_pages.get('a2'))
+    # body += body_section
+    # body_notes += note_section
+    # binaries += binary_section
 
 
     # body_notes += '</body>'
