@@ -309,7 +309,7 @@ if __name__ == '__main__':
 
         # Примечания:
         notes_title = book.body.notes.title
-        title.append_paragraph().text = 'Примечания'
+        notes_title.append_paragraph().text = 'Примечания'
 
         # # TODO: Убраны начальные иллюстрации
         # add_chapter_to_fb2(other_pages.get('i'), book)  # Начальные иллюстрации
